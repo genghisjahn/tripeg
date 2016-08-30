@@ -10,5 +10,6 @@ func main() {
 		panic(err)
 	}
 	xlog.Info.Println("Tripeg Main")
-	tripeg.BuildBoard()
+	board := tripeg.BuildBoard()
+	xlog.Info.Println(board)
 }

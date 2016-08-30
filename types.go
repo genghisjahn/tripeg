@@ -19,27 +19,72 @@ type Hole struct {
 //Jump moves a peg from one hole to another
 //If it can jump, it removes the peg from the
 //overHole hole.
-func (h *Hole) Jump(overHole Hole) bool {
+func (h *Hole) Jump(b *Board, overHole *Hole) bool {
 	if !overHole.Peg {
+		//If there is no peg in the overHole, no jump possible
 		return false
 	}
 	rDif := h.Row - overHole.Row
 	cDif := h.Col - overHole.Col
 	if math.Abs(float64(rDif)) > 1 {
+		//You can't jump over more than 1 row horizontally
 		return false
 	}
 	if math.Abs(float64(cDif)) > 1 {
+		//You can't jump over more than 1 col vertically
 		return false
 	}
+	targetR := 0
+	targetC := 0
 	if rDif == 0 {
 		//This is a horizontal jump
+		targetR = h.Row
 	}
-	return false
+	if rDif > 0 {
+		targetR = overHole.Row - 1
+		//This is a up
+	}
+	if rDif < 0 {
+		targetR = overHole.Row + 1
+		//This is a jump down
+	}
+	if cDif > 0 {
+		targetC = overHole.Col - 1
+		//This is a jump left
+	}
+	if cDif > 0 {
+		targetC = overHole.Col + 1
+		//This is a jump right
+	}
+	targetHole := b.GetHole(targetR, targetC)
+	if targetHole == nil {
+		return false
+	}
+	if targetHole.Peg {
+		return false
+	}
+	h.Peg = false
+	overHole.Peg = false
+	targetHole.Peg = true
+	return true
 }
 
 //Board contains all the holes that contain the pegs
 type Board struct {
-	Holes []Hole
+	Holes []*Hole
+}
+
+//GetHole gets a pointer to a hole based on the row,col coordinates
+func (b Board) GetHole(r, c int) *Hole {
+	if r < 0 || r > 6 || c < 0 || c > 9 {
+		return nil
+	}
+	for _, v := range b.Holes {
+		if v.Col == c && v.Row == r {
+			return v
+		}
+	}
+	return nil
 }
 
 //BuildBoard makes a board of peg holes.
@@ -50,7 +95,7 @@ func BuildBoard() Board {
 	var b Board
 	s2 := rand.NewSource(time.Now().UnixNano())
 	r2 := rand.New(s2)
-	empty := r2.Intn(16)
+	empty := r2.Intn(15)
 	for r := 1; r < 6; r++ {
 		for c := 1; c < r+1; c++ {
 			col := 4 - (r) + (c * 2)
@@ -58,12 +103,30 @@ func BuildBoard() Board {
 			if empty == len(b.Holes) {
 				h.Peg = false
 			}
-			b.Holes = append(b.Holes, h)
+			b.Holes = append(b.Holes, &h)
 		}
 	}
 	return b
 }
 
+func (b Board) String() string {
+	result := "\n"
+	for r := 1; r < 6; r++ {
+		for c := 1; c < 10; c++ {
+			h := b.GetHole(r, c)
+			mark := " "
+			if h != nil {
+				mark = "O"
+				if h.Peg {
+					mark = "*"
+				}
+			}
+			result += mark
+		}
+		result += "\n"
+	}
+	return result
+}
 func even(number int) bool {
 	return number%2 == 0
 }
