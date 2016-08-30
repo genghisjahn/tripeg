@@ -1,6 +1,7 @@
 package tripeg
 
 import (
+	"math"
 	"math/rand"
 	"time"
 )
@@ -19,6 +20,20 @@ type Hole struct {
 //If it can jump, it removes the peg from the
 //overHole hole.
 func (h *Hole) Jump(overHole Hole) bool {
+	if !overHole.Peg {
+		return false
+	}
+	rDif := h.Row - overHole.Row
+	cDif := h.Col - overHole.Col
+	if math.Abs(float64(rDif)) > 1 {
+		return false
+	}
+	if math.Abs(float64(cDif)) > 1 {
+		return false
+	}
+	if rDif == 0 {
+		//This is a horizontal jump
+	}
 	return false
 }
 
