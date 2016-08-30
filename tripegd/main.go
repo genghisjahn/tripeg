@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/genghisjahn/tripeg"
 	"github.com/genghisjahn/xlog"
 )
@@ -12,4 +14,7 @@ func main() {
 	xlog.Info.Println("Tripeg Main")
 	board := tripeg.BuildBoard()
 	board.Solve()
+	for _, m := range board.MoveLog {
+		fmt.Println(m)
+	}
 }

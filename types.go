@@ -36,9 +36,12 @@ func (h *Hole) Jump(b *Board, overHole *Hole) bool {
 		//You can't jump over more than 1 row horizontally
 		return false
 	}
-	if math.Abs(float64(cDif)) > 1 {
+	if rDif > 0 && math.Abs(float64(cDif)) > 1 {
 		//You can't jump over more than 1 col vertically
 		return false
+	}
+	if rDif == 0 && math.Abs(float64(cDif)) > 2 {
+		//You can't jump more than 2 cols horizontally
 	}
 	targetR := 0
 	targetC := 0
@@ -54,12 +57,20 @@ func (h *Hole) Jump(b *Board, overHole *Hole) bool {
 		targetR = overHole.Row + 1
 		//This is a jump down
 	}
-	if cDif > 0 {
-		targetC = overHole.Col - 1
+	if cDif < 0 {
+		x := 1
+		if rDif == 0 {
+			x = 2
+		}
+		targetC = overHole.Col - x
 		//This is a jump left
 	}
 	if cDif > 0 {
-		targetC = overHole.Col + 1
+		x := 1
+		if rDif == 0 {
+			x = 2
+		}
+		targetC = overHole.Col + x
 		//This is a jump right
 	}
 	targetHole := b.GetHole(targetR, targetC)
@@ -116,7 +127,7 @@ func BuildBoard() Board {
 	return b
 }
 
-func (b Board) Solve() {
+func (b *Board) Solve() {
 	b.MoveLog = []string{}
 	s2 := rand.NewSource(time.Now().UnixNano())
 	r2 := rand.New(s2)
@@ -142,13 +153,10 @@ func (b Board) Solve() {
 					}
 				}
 			}
-			if h1.Jump(&b, h2) {
-				b.MoveLog = append(b.MoveLog, "Successful move!")
-				fmt.Println(b.MoveLog)
-				fmt.Println(b)
+			if h1.Jump(b, h2) {
+				b.MoveLog = append(b.MoveLog, fmt.Sprintf("OK %v %v %v\n", h1, h2, b))
 				break
 			}
-			fmt.Println("Bad move...", h1, h2)
 		}
 	}
 }
