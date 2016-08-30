@@ -1,6 +1,7 @@
 package tripeg
 
 import (
+	"fmt"
 	"math"
 	"math/rand"
 	"time"
@@ -24,8 +25,13 @@ func (h *Hole) Jump(b *Board, overHole *Hole) bool {
 		//If there is no peg in the overHole, no jump possible
 		return false
 	}
+
 	rDif := h.Row - overHole.Row
 	cDif := h.Col - overHole.Col
+	if cDif == 0 && rDif == 0 {
+		//Holes are the same, not valid
+		return false
+	}
 	if math.Abs(float64(rDif)) > 1 {
 		//You can't jump over more than 1 row horizontally
 		return false
@@ -71,7 +77,8 @@ func (h *Hole) Jump(b *Board, overHole *Hole) bool {
 
 //Board contains all the holes that contain the pegs
 type Board struct {
-	Holes []*Hole
+	Holes   []*Hole
+	MoveLog []string
 }
 
 //GetHole gets a pointer to a hole based on the row,col coordinates
@@ -107,6 +114,43 @@ func BuildBoard() Board {
 		}
 	}
 	return b
+}
+
+func (b Board) Solve() {
+	b.MoveLog = []string{}
+	s2 := rand.NewSource(time.Now().UnixNano())
+	r2 := rand.New(s2)
+	p1, p2 := 0, 0
+	h1 := &Hole{}
+	h2 := &Hole{}
+	h1, h2 = nil, nil
+	for m := 0; m < 4; m++ {
+		for { //Main try loop
+			p1 = r2.Intn(15)
+			p2 = r2.Intn(15)
+			for k := range b.Holes {
+				if k == p1 {
+					h1 = b.Holes[k]
+					if h2 != nil {
+						break
+					}
+				}
+				if k == p2 {
+					h2 = b.Holes[k]
+					if h1 != nil {
+						break
+					}
+				}
+			}
+			if h1.Jump(&b, h2) {
+				b.MoveLog = append(b.MoveLog, "Successful move!")
+				fmt.Println(b.MoveLog)
+				fmt.Println(b)
+				break
+			}
+			fmt.Println("Bad move...", h1, h2)
+		}
+	}
 }
 
 func (b Board) String() string {

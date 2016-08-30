@@ -11,5 +11,5 @@ func main() {
 	}
 	xlog.Info.Println("Tripeg Main")
 	board := tripeg.BuildBoard()
-	xlog.Info.Println(board)
+	board.Solve()
 }
