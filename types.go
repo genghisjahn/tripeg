@@ -142,6 +142,22 @@ func (b *Board) Solve() {
 	//try again until there are no moves to make
 	//or 14 legal moves have been made, (winner)
 	//Print out all the winning moves
+	cMoves := []*Hole{}
+	_ = cMoves
+	for _, v := range b.Holes {
+		if v.Peg == true {
+			o := b.GetHole(v.Row-1, v.Col-2)
+			if v.Jump(b, o) {
+				//upleft
+
+			}
+			//upright
+			//right
+			//left
+			//downleft
+			//downright
+		}
+	}
 }
 
 func (b Board) String() string {
