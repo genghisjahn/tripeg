@@ -141,7 +141,7 @@ func (b *Board) Solve() {
 	h1 := &Hole{}
 	h2 := &Hole{}
 	h1, h2 = nil, nil
-	for m := 0; m < 4; m++ {
+	for m := 0; m < 18; m++ {
 		for { //Main try loop
 			p1 = r2.Intn(15)
 			p2 = r2.Intn(15)

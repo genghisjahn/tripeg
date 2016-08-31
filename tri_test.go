@@ -43,7 +43,7 @@ func TestInvavidTargetPegFull(t *testing.T) {
 	}
 }
 
-func TestInvavidHolePegEmpty(t *testing.T) {
+func TestInvalidHolePegEmpty(t *testing.T) {
 	b := BuildBoard(6)
 	h := b.GetHole(3, 7)
 	o := b.GetHole(3, 5)
