@@ -27,7 +27,7 @@ func (h *Hole) Jump(b *Board, overHole *Hole) bool {
 	}
 
 	rDif := h.Row - overHole.Row
-	cDif := h.Col - overHole.Col
+	cDif := overHole.Col - h.Col
 	if cDif == 0 && rDif == 0 {
 		//Holes are the same, not valid
 		return false
@@ -41,6 +41,7 @@ func (h *Hole) Jump(b *Board, overHole *Hole) bool {
 		return false
 	}
 	if rDif == 0 && math.Abs(float64(cDif)) > 2 {
+		return false
 		//You can't jump more than 2 cols horizontally
 	}
 	targetR := 0
@@ -109,11 +110,16 @@ func (b Board) GetHole(r, c int) *Hole {
 //All holes have a peg except one randomly assigned.
 //The top row has 1, then
 //2,3,4,5 for a total of 16 holes.
-func BuildBoard() Board {
+func BuildBoard(empty int) Board {
 	var b Board
 	s2 := rand.NewSource(time.Now().UnixNano())
 	r2 := rand.New(s2)
-	empty := r2.Intn(15)
+	if empty == 0 {
+		empty = r2.Intn(15)
+	} else {
+		empty--
+	}
+
 	for r := 1; r < 6; r++ {
 		for c := 1; c < r+1; c++ {
 			col := 4 - (r) + (c * 2)
