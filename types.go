@@ -1,7 +1,6 @@
 package tripeg
 
 import (
-	"fmt"
 	"math"
 	"math/rand"
 	"time"
@@ -135,36 +134,14 @@ func BuildBoard(empty int) Board {
 
 func (b *Board) Solve() {
 	b.MoveLog = []string{}
-	s2 := rand.NewSource(time.Now().UnixNano())
-	r2 := rand.New(s2)
-	p1, p2 := 0, 0
-	h1 := &Hole{}
-	h2 := &Hole{}
-	h1, h2 = nil, nil
-	for m := 0; m < 18; m++ {
-		for { //Main try loop
-			p1 = r2.Intn(15)
-			p2 = r2.Intn(15)
-			for k := range b.Holes {
-				if k == p1 {
-					h1 = b.Holes[k]
-					if h2 != nil {
-						break
-					}
-				}
-				if k == p2 {
-					h2 = b.Holes[k]
-					if h1 != nil {
-						break
-					}
-				}
-			}
-			if h1.Jump(b, h2) {
-				b.MoveLog = append(b.MoveLog, fmt.Sprintf("OK %v %v %v\n", h1, h2, b))
-				break
-			}
-		}
-	}
+	//Find out how many holes
+	//can make a legal Move
+	//randomly pick one of those holes
+	//find out how many moves can be made from that hole
+	//randomly pick one of those
+	//try again until there are no moves to make
+	//or 14 legal moves have been made, (winner)
+	//Print out all the winning moves
 }
 
 func (b Board) String() string {
