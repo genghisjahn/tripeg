@@ -1,6 +1,7 @@
 package tripeg
 
 import (
+	"fmt"
 	"math"
 	"math/rand"
 	"time"
@@ -136,28 +137,82 @@ func (b *Board) Solve() {
 	b.MoveLog = []string{}
 	//Find out how many holes
 	//can make a legal Move
-	//randomly pick one of those holes
-	//find out how many moves can be made from that hole
+	//find out how many moves can be made from those hole
 	//randomly pick one of those
 	//try again until there are no moves to make
 	//or 14 legal moves have been made, (winner)
 	//Print out all the winning moves
-	cMoves := []*Hole{}
-	_ = cMoves
+	type cMove struct {
+		H *Hole
+		O *Hole
+	}
+	cMoves := []cMove{}
+	moves := 0
 	for _, v := range b.Holes {
 		if v.Peg == true {
-			o := b.GetHole(v.Row-1, v.Col-2)
-			if v.Jump(b, o) {
-				//upleft
-
+			o := b.GetHole(v.Row-1, v.Col-1)
+			if o != nil {
+				if v.Jump(b, o) {
+					//upleft
+					cMoves = append(cMoves, cMove{H: v, O: o})
+				}
 			}
-			//upright
-			//right
-			//left
-			//downleft
-			//downright
+			o = b.GetHole(v.Row-1, v.Col+1)
+			if o != nil {
+				if v.Jump(b, o) {
+					//upright
+					cMoves = append(cMoves, cMove{H: v, O: o})
+				}
+			}
+			o = b.GetHole(v.Row, v.Col+2)
+			if o != nil {
+				if v.Jump(b, o) {
+					//right
+					cMoves = append(cMoves, cMove{H: v, O: o})
+				}
+			}
+			o = b.GetHole(v.Row, v.Col-2)
+			if o != nil {
+				if v.Jump(b, o) {
+					//left
+					cMoves = append(cMoves, cMove{H: v, O: o})
+				}
+			}
+			o = b.GetHole(v.Row+1, v.Col-2)
+			if o != nil {
+				if v.Jump(b, o) {
+					//downleft
+					cMoves = append(cMoves, cMove{H: v, O: o})
+				}
+			}
+			o = b.GetHole(v.Row+1, v.Col+2)
+			if o != nil {
+				if v.Jump(b, o) {
+					//downright
+					cMoves = append(cMoves, cMove{H: v, O: o})
+				}
+			}
 		}
+
+		//s2 := rand.NewSource(time.Now().UnixNano())
+		//r2 := rand.New(s2)
+		// if len(cMoves) == 0 {
+		// 	fmt.Println("Dead End...", moves)
+		// 	return
+		// }
+		// m := cMoves[r2.Intn(len(cMoves))]
+		// if m.H.Jump(b, m.O) {
+		// 	moves++
+		// }
+		// if moves == 3 {
+		// 	fmt.Println("Made to the goal")
+		// }
 	}
+	_ = moves
+	for _, mv := range cMoves {
+		fmt.Println(mv.H, mv.O)
+	}
+	return
 }
 
 func (b Board) String() string {
@@ -177,7 +232,4 @@ func (b Board) String() string {
 		result += "\n"
 	}
 	return result
-}
-func even(number int) bool {
-	return number%2 == 0
 }
