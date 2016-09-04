@@ -76,5 +76,19 @@ func TestInvavidTargetPegFull(t *testing.T) {
 }
 
 func TestInvalidHolePegEmpty(t *testing.T) {
-
+	b := BuildBoard(6)
+	h, err1 := b.GetHole(3, 7)
+	if err1 != nil {
+		t.Errorf("Can't find hole 3,7")
+	}
+	o, err2 := b.GetHole(2, 6)
+	if err2 != nil {
+		t.Errorf("Can't find hole, 2,6")
+	}
+	_, err := b.Jump(h, o)
+	if err != nil {
+		if err.Error() != "No Peg in move hole 2,6\n" {
+			t.Fatal("Should have failed with No Peg in move hole 2,6")
+		}
+	}
 }
