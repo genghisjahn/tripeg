@@ -145,8 +145,74 @@ func BuildBoard(empty int) Board {
 	return b
 }
 
+//Solve does a brute force solving of the game
 func (b *Board) Solve() {
+	type move struct {
+		H Hole
+		O Hole
+	}
+	aMoves := []move{}
+	o := Hole{}
+	var err error
+	for _, v := range b.Holes {
+		if v.Peg {
+			//upleft
+			o, err = b.GetHole(v.Row-1, v.Col-1)
+			if err == nil {
+				_, errJ := b.Jump(v, o)
+				if errJ == nil {
+					aMoves = append(aMoves, move{H: v, O: o})
+				}
+			}
 
+			//upright
+			o, err = b.GetHole(v.Row-1, v.Col+1)
+			if err == nil {
+				_, errJ := b.Jump(v, o)
+				if errJ == nil {
+					aMoves = append(aMoves, move{H: v, O: o})
+				}
+			}
+
+			//left
+			o, err = b.GetHole(v.Row-2, v.Col)
+			if err == nil {
+				_, errJ := b.Jump(v, o)
+				if errJ == nil {
+					aMoves = append(aMoves, move{H: v, O: o})
+				}
+			}
+			//right
+			o, err = b.GetHole(v.Row+2, v.Col)
+			if err == nil {
+				_, errJ := b.Jump(v, o)
+				if errJ == nil {
+					aMoves = append(aMoves, move{H: v, O: o})
+				}
+			}
+
+			//downleft
+			o, err = b.GetHole(v.Row+1, v.Col-1)
+			if err == nil {
+				_, errJ := b.Jump(v, o)
+				if errJ == nil {
+					aMoves = append(aMoves, move{H: v, O: o})
+				}
+			}
+
+			//downright
+			o, err = b.GetHole(v.Row+1, v.Col+1)
+			if err == nil {
+				_, errJ := b.Jump(v, o)
+				if errJ == nil {
+					aMoves = append(aMoves, move{H: v, O: o})
+				}
+			}
+		}
+	}
+	for k, a := range aMoves {
+		fmt.Println(k+1, a)
+	}
 }
 
 func (b Board) String() string {
