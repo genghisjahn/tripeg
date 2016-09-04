@@ -146,72 +146,88 @@ func BuildBoard(empty int) Board {
 }
 
 //Solve does a brute force solving of the game
-func (b *Board) Solve() {
+func (b Board) Solve() {
+	var newBoard = b
+	validMove := 0
 	type move struct {
 		H Hole
 		O Hole
 	}
-	aMoves := []move{}
-	o := Hole{}
-	var err error
-	for _, v := range b.Holes {
-		if v.Peg {
-			//upleft
-			o, err = b.GetHole(v.Row-1, v.Col-1)
-			if err == nil {
-				_, errJ := b.Jump(v, o)
-				if errJ == nil {
-					aMoves = append(aMoves, move{H: v, O: o})
-				}
-			}
+	for {
 
-			//upright
-			o, err = b.GetHole(v.Row-1, v.Col+1)
-			if err == nil {
-				_, errJ := b.Jump(v, o)
-				if errJ == nil {
-					aMoves = append(aMoves, move{H: v, O: o})
+		aMoves := []move{}
+		o := Hole{}
+		var err error
+		for _, v := range newBoard.Holes {
+			if v.Peg {
+				//upleft
+				o, err = b.GetHole(v.Row-1, v.Col-1)
+				if err == nil {
+					_, errJ := b.Jump(v, o)
+					if errJ == nil {
+						aMoves = append(aMoves, move{H: v, O: o})
+					}
 				}
-			}
 
-			//left
-			o, err = b.GetHole(v.Row-2, v.Col)
-			if err == nil {
-				_, errJ := b.Jump(v, o)
-				if errJ == nil {
-					aMoves = append(aMoves, move{H: v, O: o})
+				//upright
+				o, err = b.GetHole(v.Row-1, v.Col+1)
+				if err == nil {
+					_, errJ := b.Jump(v, o)
+					if errJ == nil {
+						aMoves = append(aMoves, move{H: v, O: o})
+					}
 				}
-			}
-			//right
-			o, err = b.GetHole(v.Row+2, v.Col)
-			if err == nil {
-				_, errJ := b.Jump(v, o)
-				if errJ == nil {
-					aMoves = append(aMoves, move{H: v, O: o})
-				}
-			}
 
-			//downleft
-			o, err = b.GetHole(v.Row+1, v.Col-1)
-			if err == nil {
-				_, errJ := b.Jump(v, o)
-				if errJ == nil {
-					aMoves = append(aMoves, move{H: v, O: o})
+				//left
+				o, err = b.GetHole(v.Row-2, v.Col)
+				if err == nil {
+					_, errJ := b.Jump(v, o)
+					if errJ == nil {
+						aMoves = append(aMoves, move{H: v, O: o})
+					}
 				}
-			}
+				//right
+				o, err = b.GetHole(v.Row+2, v.Col)
+				if err == nil {
+					_, errJ := b.Jump(v, o)
+					if errJ == nil {
+						aMoves = append(aMoves, move{H: v, O: o})
+					}
+				}
 
-			//downright
-			o, err = b.GetHole(v.Row+1, v.Col+1)
-			if err == nil {
-				_, errJ := b.Jump(v, o)
-				if errJ == nil {
-					aMoves = append(aMoves, move{H: v, O: o})
+				//downleft
+				o, err = b.GetHole(v.Row+1, v.Col-1)
+				if err == nil {
+					_, errJ := b.Jump(v, o)
+					if errJ == nil {
+						aMoves = append(aMoves, move{H: v, O: o})
+					}
+				}
+
+				//downright
+				o, err = b.GetHole(v.Row+1, v.Col+1)
+				if err == nil {
+					_, errJ := b.Jump(v, o)
+					if errJ == nil {
+						aMoves = append(aMoves, move{H: v, O: o})
+					}
 				}
 			}
 		}
-	}
-	for k, a := range aMoves {
-		fmt.Println(k+1, a)
+		s2 := rand.NewSource(time.Now().UnixNano())
+		r2 := rand.New(s2)
+		available := r2.Intn(len(aMoves))
+		cBoard, errN := b.Jump(aMoves[available].H, aMoves[available].O)
+		if errN != nil {
+			fmt.Println(errN)
+			return
+		}
+		validMove++
+		newBoard = cBoard
+		fmt.Println("Move:", validMove, newBoard)
+		if validMove == 3 {
+			break
+		}
 	}
 }
 
