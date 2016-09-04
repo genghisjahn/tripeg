@@ -17,9 +17,90 @@ type Hole struct {
 	Links []*Hole //Other Holes the hole is connected to
 }
 
+//Jump from the Board struct type
+func (b Board) Jump(m, o Hole) (Board, error) {
+	result := b
+	if !m.Peg {
+		//If there is no peg in the moveHole, no jump possible
+		return result, fmt.Errorf("No Peg in move hole %d,%d\n", o.Row, o.Col)
+	}
+	if !o.Peg {
+		//If there is no peg in the overHole, no jump possible
+		return result, fmt.Errorf("No Peg in over hole %d,%d\n", o.Row, o.Col)
+	}
+	rDif := m.Row - o.Row
+	cDif := o.Col - m.Col
+	if cDif == 0 && rDif == 0 {
+		//Holes are the same, not valid
+		return result, fmt.Errorf("Jump peg and over hole are the same\n")
+	}
+	if math.Abs(float64(rDif)) > 1 {
+		//You can't jump over more than 1 row horizontally
+		return result, fmt.Errorf("Invalid horizonal movement %d\n", rDif)
+	}
+	if rDif > 0 && math.Abs(float64(cDif)) > 1 {
+		//You can't jump over more than 1 col vertically
+		return result, fmt.Errorf("Invalid vertical movement %d\n", cDif)
+	}
+	if rDif == 0 && math.Abs(float64(cDif)) > 2 {
+		return result, fmt.Errorf("Invalid horizantal movement %d\n", rDif)
+		//You can't jump more than 2 cols horizontally
+	}
+	targetR := 0
+	targetC := 0
+	if rDif == 0 {
+		//This is a horizontal jump
+		targetR = m.Row
+	}
+	if rDif > 0 {
+		targetR = o.Row - 1
+		//This is a up
+	}
+	if rDif < 0 {
+		targetR = o.Row + 1
+		//This is a jump down
+	}
+	if cDif < 0 {
+		x := 1
+		if rDif == 0 {
+			x = 2
+		}
+		targetC = o.Col - x
+		//This is a jump left
+	}
+	if cDif > 0 {
+		x := 1
+		if rDif == 0 {
+			x = 2
+		}
+		targetC = o.Col + x
+		//This is a jump right
+	}
+	targetHole := b.GetHole(targetR, targetC)
+	if targetHole == nil {
+		return result, fmt.Errorf("Target hole(%d,%d) does not exist\n", targetR, targetC)
+	}
+	if targetHole.Peg {
+		return result, fmt.Errorf("Target hole(%d,%d) has a peg in it\n", targetHole.Row, targetHole.Col)
+	}
+	for _, bh := range result.Holes {
+		if bh.Row == m.Row && bh.Col == m.Col {
+			bh.Peg = false
+		}
+		if bh.Row == o.Row && bh.Col == o.Col {
+			bh.Peg = false
+		}
+		if bh.Row == targetHole.Row && bh.Col == targetHole.Col {
+			bh.Peg = true
+		}
+	}
+	return result, nil
+}
+
 //Jump moves a peg from one hole to another
 //If it can jump, it removes the peg from the
 //overHole hole.
+//**THIS FUNC DOES NOT WORK***
 func (h *Hole) Jump(b Board, overHole *Hole) error {
 	if !overHole.Peg {
 		//If there is no peg in the overHole, no jump possible
