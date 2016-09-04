@@ -12,7 +12,7 @@ func main() {
 		panic(err)
 	}
 	xlog.Info.Println("Tripeg Main")
-	board := tripeg.BuildBoard(0)
+	board := tripeg.BuildBoard(1)
 	fmt.Println(board)
 	fmt.Println("----------")
 	board.Solve()

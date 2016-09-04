@@ -146,11 +146,16 @@ func (b *Board) Solve() {
 		H *Hole
 		O *Hole
 	}
+	fboard := Board{}
+	fboard = *b
 	cMoves := []cMove{}
 	moves := 0
 	for _, v := range b.Holes {
+		var bt = fboard
+		if len(cMoves) == 2 {
+			break
+		}
 		if v.Peg == true {
-			var bt = *b
 			o := bt.GetHole(v.Row-1, v.Col-1)
 			if o != nil {
 				if v.Jump(&bt, o) {
@@ -158,40 +163,41 @@ func (b *Board) Solve() {
 					cMoves = append(cMoves, cMove{H: v, O: o})
 				}
 			}
-			bt = *b
-			o = b.GetHole(v.Row-1, v.Col+1)
+			bt = fboard
+			o = bt.GetHole(v.Row-1, v.Col+1)
 			if o != nil {
 				if v.Jump(&bt, o) {
 					//upright
 					cMoves = append(cMoves, cMove{H: v, O: o})
 				}
 			}
-			bt = *b
-			o = b.GetHole(v.Row, v.Col+2)
+			bt = fboard
+			o = bt.GetHole(v.Row, v.Col+2)
 			if o != nil {
 				if v.Jump(&bt, o) {
 					//right
 					cMoves = append(cMoves, cMove{H: v, O: o})
 				}
+
 			}
-			bt = *b
-			o = b.GetHole(v.Row, v.Col-2)
+			bt = fboard
+			o = bt.GetHole(v.Row, v.Col-2)
 			if o != nil {
 				if v.Jump(&bt, o) {
 					//left
 					cMoves = append(cMoves, cMove{H: v, O: o})
 				}
 			}
-			bt = *b
-			o = b.GetHole(v.Row+1, v.Col-2)
+			bt = fboard
+			o = bt.GetHole(v.Row+1, v.Col-2)
 			if o != nil {
 				if v.Jump(&bt, o) {
 					//downleft
 					cMoves = append(cMoves, cMove{H: v, O: o})
 				}
 			}
-			bt = *b
-			o = b.GetHole(v.Row+1, v.Col+2)
+			bt = fboard
+			o = bt.GetHole(v.Row+1, v.Col+2)
 			if o != nil {
 				if v.Jump(&bt, o) {
 					//downright
@@ -199,20 +205,6 @@ func (b *Board) Solve() {
 				}
 			}
 		}
-
-		//s2 := rand.NewSource(time.Now().UnixNano())
-		//r2 := rand.New(s2)
-		// if len(cMoves) == 0 {
-		// 	fmt.Println("Dead End...", moves)
-		// 	return
-		// }
-		// m := cMoves[r2.Intn(len(cMoves))]
-		// if m.H.Jump(b, m.O) {
-		// 	moves++
-		// }
-		// if moves == 3 {
-		// 	fmt.Println("Made to the goal")
-		// }
 	}
 	_ = moves
 	for _, mv := range cMoves {
