@@ -20,28 +20,28 @@ type Hole struct {
 //Jump moves a peg from one hole to another
 //If it can jump, it removes the peg from the
 //overHole hole.
-func (h *Hole) Jump(b *Board, overHole *Hole) bool {
+func (h *Hole) Jump(b Board, overHole *Hole) error {
 	if !overHole.Peg {
 		//If there is no peg in the overHole, no jump possible
-		return false
+		return fmt.Errorf("No Peg in %d,%d\n", overHole.Row, overHole.Col)
 	}
 
 	rDif := h.Row - overHole.Row
 	cDif := overHole.Col - h.Col
 	if cDif == 0 && rDif == 0 {
 		//Holes are the same, not valid
-		return false
+		return fmt.Errorf("Jump peg and over hold are the same\n")
 	}
 	if math.Abs(float64(rDif)) > 1 {
 		//You can't jump over more than 1 row horizontally
-		return false
+		return fmt.Errorf("Invalid horizonal movement %d\n", rDif)
 	}
 	if rDif > 0 && math.Abs(float64(cDif)) > 1 {
 		//You can't jump over more than 1 col vertically
-		return false
+		return fmt.Errorf("Invalid vertical movement %d\n", cDif)
 	}
 	if rDif == 0 && math.Abs(float64(cDif)) > 2 {
-		return false
+		return fmt.Errorf("Invalid horizantal movement %d\n", rDif)
 		//You can't jump more than 2 cols horizontally
 	}
 	targetR := 0
@@ -76,15 +76,15 @@ func (h *Hole) Jump(b *Board, overHole *Hole) bool {
 	}
 	targetHole := b.GetHole(targetR, targetC)
 	if targetHole == nil {
-		return false
+		return fmt.Errorf("Target hole(%d,%d) does not exist\n", targetR, targetC)
 	}
 	if targetHole.Peg {
-		return false
+		return fmt.Errorf("Target hole(%d,%d) has a peg in it\n", targetHole.Row, targetHole.Col)
 	}
 	h.Peg = false
 	overHole.Peg = false
 	targetHole.Peg = true
-	return true
+	return nil
 }
 
 //Board contains all the holes that contain the pegs
@@ -158,7 +158,7 @@ func (b *Board) Solve() {
 		if v.Peg == true {
 			o := bt.GetHole(v.Row-1, v.Col-1)
 			if o != nil {
-				if v.Jump(&bt, o) {
+				if v.Jump(bt, o) != nil {
 					//upleft
 					cMoves = append(cMoves, cMove{H: v, O: o})
 				}
@@ -166,7 +166,7 @@ func (b *Board) Solve() {
 			bt = fboard
 			o = bt.GetHole(v.Row-1, v.Col+1)
 			if o != nil {
-				if v.Jump(&bt, o) {
+				if v.Jump(bt, o) != nil {
 					//upright
 					cMoves = append(cMoves, cMove{H: v, O: o})
 				}
@@ -174,7 +174,7 @@ func (b *Board) Solve() {
 			bt = fboard
 			o = bt.GetHole(v.Row, v.Col+2)
 			if o != nil {
-				if v.Jump(&bt, o) {
+				if v.Jump(bt, o) != nil {
 					//right
 					cMoves = append(cMoves, cMove{H: v, O: o})
 				}
@@ -183,7 +183,7 @@ func (b *Board) Solve() {
 			bt = fboard
 			o = bt.GetHole(v.Row, v.Col-2)
 			if o != nil {
-				if v.Jump(&bt, o) {
+				if v.Jump(bt, o) != nil {
 					//left
 					cMoves = append(cMoves, cMove{H: v, O: o})
 				}
@@ -191,7 +191,7 @@ func (b *Board) Solve() {
 			bt = fboard
 			o = bt.GetHole(v.Row+1, v.Col-2)
 			if o != nil {
-				if v.Jump(&bt, o) {
+				if v.Jump(bt, o) != nil {
 					//downleft
 					cMoves = append(cMoves, cMove{H: v, O: o})
 				}
@@ -199,7 +199,7 @@ func (b *Board) Solve() {
 			bt = fboard
 			o = bt.GetHole(v.Row+1, v.Col+2)
 			if o != nil {
-				if v.Jump(&bt, o) {
+				if v.Jump(bt, o) != nil {
 					//downright
 					cMoves = append(cMoves, cMove{H: v, O: o})
 				}
