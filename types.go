@@ -150,44 +150,50 @@ func (b *Board) Solve() {
 	moves := 0
 	for _, v := range b.Holes {
 		if v.Peg == true {
-			o := b.GetHole(v.Row-1, v.Col-1)
+			var bt = *b
+			o := bt.GetHole(v.Row-1, v.Col-1)
 			if o != nil {
-				if v.Jump(b, o) {
+				if v.Jump(&bt, o) {
 					//upleft
 					cMoves = append(cMoves, cMove{H: v, O: o})
 				}
 			}
+			bt = *b
 			o = b.GetHole(v.Row-1, v.Col+1)
 			if o != nil {
-				if v.Jump(b, o) {
+				if v.Jump(&bt, o) {
 					//upright
 					cMoves = append(cMoves, cMove{H: v, O: o})
 				}
 			}
+			bt = *b
 			o = b.GetHole(v.Row, v.Col+2)
 			if o != nil {
-				if v.Jump(b, o) {
+				if v.Jump(&bt, o) {
 					//right
 					cMoves = append(cMoves, cMove{H: v, O: o})
 				}
 			}
+			bt = *b
 			o = b.GetHole(v.Row, v.Col-2)
 			if o != nil {
-				if v.Jump(b, o) {
+				if v.Jump(&bt, o) {
 					//left
 					cMoves = append(cMoves, cMove{H: v, O: o})
 				}
 			}
+			bt = *b
 			o = b.GetHole(v.Row+1, v.Col-2)
 			if o != nil {
-				if v.Jump(b, o) {
+				if v.Jump(&bt, o) {
 					//downleft
 					cMoves = append(cMoves, cMove{H: v, O: o})
 				}
 			}
+			bt = *b
 			o = b.GetHole(v.Row+1, v.Col+2)
 			if o != nil {
-				if v.Jump(b, o) {
+				if v.Jump(&bt, o) {
 					//downright
 					cMoves = append(cMoves, cMove{H: v, O: o})
 				}
