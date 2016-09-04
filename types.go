@@ -150,16 +150,16 @@ func (b *Board) Solve() {
 	fboard = *b
 	cMoves := []cMove{}
 	moves := 0
-	for _, v := range b.Holes {
+	holes := b.Holes[0:2]
+	for _, v := range holes {
 		var bt = fboard
-		if len(cMoves) == 2 {
-			break
-		}
 		if v.Peg == true {
+			fmt.Println(v.Row, v.Col)
 			o := bt.GetHole(v.Row-1, v.Col-1)
 			if o != nil {
 				if v.Jump(bt, o) != nil {
 					//upleft
+					fmt.Println("UL")
 					cMoves = append(cMoves, cMove{H: v, O: o})
 				}
 			}
@@ -168,6 +168,7 @@ func (b *Board) Solve() {
 			if o != nil {
 				if v.Jump(bt, o) != nil {
 					//upright
+					fmt.Println("UR")
 					cMoves = append(cMoves, cMove{H: v, O: o})
 				}
 			}
