@@ -32,7 +32,7 @@ func main() {
 	}
 	fmt.Println(board)
 	board.Solve()
-	for _, m := range board.MoveLog {
-		fmt.Println(m)
+	for k, m := range board.MoveLog {
+		fmt.Println(k+1, m)
 	}
 }
