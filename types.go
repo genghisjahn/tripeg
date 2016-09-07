@@ -123,8 +123,11 @@ func (b Board) GetHole(r, c int) (Hole, error) {
 //All holes have a peg except one randomly assigned.
 //The top row has 1, then
 //2,3,4,5 for a total of 16 holes.
-func BuildBoard(empty int) Board {
+func BuildBoard(empty int) (Board, error) {
 	var b Board
+	if empty < 0 || empty > 15 {
+		return b, fmt.Errorf("Parameter empty must be >=0 or <=15, you supplied %d", empty)
+	}
 	s2 := rand.NewSource(time.Now().UnixNano())
 	r2 := rand.New(s2)
 	if empty == 0 {
@@ -143,7 +146,7 @@ func BuildBoard(empty int) Board {
 			b.Holes = append(b.Holes, h)
 		}
 	}
-	return b
+	return b, nil
 }
 
 type move struct {

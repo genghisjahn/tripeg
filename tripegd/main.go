@@ -12,13 +12,14 @@ func main() {
 		panic(err)
 	}
 	xlog.Info.Println("Tripeg Main")
-	board := tripeg.BuildBoard(3)
+	board, err := tripeg.BuildBoard(16)
+	if err != nil {
+		xlog.Error.Println(err)
+		return
+	}
 	fmt.Println(board)
 	board.Solve()
-	fmt.Println("----------")
 	for _, m := range board.MoveLog {
 		fmt.Println(m)
 	}
-	fmt.Println("----------")
-
 }

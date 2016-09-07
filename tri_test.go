@@ -7,7 +7,7 @@ import (
 )
 
 func TestValidJumpVertical(t *testing.T) {
-	b := BuildBoard(1)
+	b, _ := BuildBoard(1)
 	h, err1 := b.GetHole(3, 3)
 	if err1 != nil {
 		t.Errorf("Can't find hole 3,3")
@@ -23,7 +23,7 @@ func TestValidJumpVertical(t *testing.T) {
 }
 
 func TestValidJumpHorizontal(t *testing.T) {
-	b := BuildBoard(6)
+	b, _ := BuildBoard(6)
 	h, err1 := b.GetHole(3, 3)
 	if err1 != nil {
 		t.Errorf("Can't find hole 3,3")
@@ -39,7 +39,7 @@ func TestValidJumpHorizontal(t *testing.T) {
 }
 
 func TestInvavidJumpOverHasNoPeg(t *testing.T) {
-	b := BuildBoard(6)
+	b, _ := BuildBoard(6)
 	h, err1 := b.GetHole(2, 6)
 	if err1 != nil {
 		t.Errorf("Can't find hole 2,6")
@@ -58,7 +58,7 @@ func TestInvavidJumpOverHasNoPeg(t *testing.T) {
 }
 
 func TestInvavidTargetPegFull(t *testing.T) {
-	b := BuildBoard(6)
+	b, _ := BuildBoard(6)
 	h, err1 := b.GetHole(3, 3)
 	if err1 != nil {
 		t.Errorf("Can't find hole 3,3")
@@ -76,7 +76,7 @@ func TestInvavidTargetPegFull(t *testing.T) {
 }
 
 func TestInvalidHolePegEmpty(t *testing.T) {
-	b := BuildBoard(6)
+	b, _ := BuildBoard(6)
 	h, err1 := b.GetHole(3, 7)
 	if err1 != nil {
 		t.Errorf("Can't find hole 3,7")
