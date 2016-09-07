@@ -16,7 +16,7 @@ func TestValidJumpVertical(t *testing.T) {
 	if err2 != nil {
 		t.Errorf("Can't find hole, 2,4")
 	}
-	_, err := b.Jump(h, o)
+	_, _, err := b.Jump(h, o)
 	if err != nil {
 		t.Fatal("Should have been successful.")
 	}
@@ -32,7 +32,7 @@ func TestValidJumpHorizontal(t *testing.T) {
 	if err2 != nil {
 		t.Errorf("Can't find hole, 3,5")
 	}
-	_, err := b.Jump(h, o)
+	_, _, err := b.Jump(h, o)
 	if err != nil {
 		t.Fatal("Should have been successful.")
 	}
@@ -48,7 +48,7 @@ func TestInvavidJumpOverHasNoPeg(t *testing.T) {
 	if err2 != nil {
 		t.Errorf("Can't find hole, 3,7")
 	}
-	_, err := b.Jump(h, o)
+	_, _, err := b.Jump(h, o)
 	if err != nil {
 		if !strings.HasPrefix(err.Error(), "No Peg in over hole") {
 			fmt.Println(err)
@@ -67,7 +67,7 @@ func TestInvavidTargetPegFull(t *testing.T) {
 	if err2 != nil {
 		t.Errorf("Can't find hole, 2,4")
 	}
-	_, err := b.Jump(h, o)
+	_, _, err := b.Jump(h, o)
 	if err != nil {
 		if err.Error() != "Target hole(1,5) has a peg in it\n" {
 			t.Fatal("Should have failed Target hole(1,5) has a peg in it")
@@ -85,7 +85,7 @@ func TestInvalidHolePegEmpty(t *testing.T) {
 	if err2 != nil {
 		t.Errorf("Can't find hole, 2,6")
 	}
-	_, err := b.Jump(h, o)
+	_, _, err := b.Jump(h, o)
 	if err != nil {
 		if err.Error() != "No Peg in move hole 2,6\n" {
 			t.Fatal("Should have failed with No Peg in move hole 2,6")

@@ -17,35 +17,36 @@ type Hole struct {
 }
 
 //Jump from the Board struct type
-func (b Board) Jump(m, o Hole) (Board, error) {
+func (b Board) Jump(m, o Hole) (Board, Hole, error) {
 	result := Board{}
+	thole := Hole{}
 	for _, r := range b.Holes {
 		result.Holes = append(result.Holes, r)
 	}
 	if !m.Peg {
 		//If there is no peg in the moveHole, no jump possible
-		return result, fmt.Errorf("No Peg in move hole %d,%d\n", o.Row, o.Col)
+		return result, thole, fmt.Errorf("No Peg in move hole %d,%d\n", o.Row, o.Col)
 	}
 	if !o.Peg {
 		//If there is no peg in the overHole, no jump possible
-		return result, fmt.Errorf("No Peg in over hole %d,%d\n", o.Row, o.Col)
+		return result, thole, fmt.Errorf("No Peg in over hole %d,%d\n", o.Row, o.Col)
 	}
 	rDif := m.Row - o.Row
 	cDif := o.Col - m.Col
 	if cDif == 0 && rDif == 0 {
 		//Holes are the same, not valid
-		return result, fmt.Errorf("Jump peg and over hole are the same\n")
+		return result, thole, fmt.Errorf("Jump peg and over hole are the same\n")
 	}
 	if math.Abs(float64(rDif)) > 1 {
 		//You can't jump over more than 1 row horizontally
-		return result, fmt.Errorf("Invalid horizonal movement %d\n", rDif)
+		return result, thole, fmt.Errorf("Invalid horizonal movement %d\n", rDif)
 	}
 	if rDif > 0 && math.Abs(float64(cDif)) > 1 {
 		//You can't jump over more than 1 col vertically
-		return result, fmt.Errorf("Invalid vertical movement %d\n", cDif)
+		return result, thole, fmt.Errorf("Invalid vertical movement %d\n", cDif)
 	}
 	if rDif == 0 && math.Abs(float64(cDif)) > 2 {
-		return result, fmt.Errorf("Invalid horizantal movement %d\n", rDif)
+		return result, thole, fmt.Errorf("Invalid horizantal movement %d\n", rDif)
 		//You can't jump more than 2 cols horizontally
 	}
 	targetR := 0
@@ -80,10 +81,10 @@ func (b Board) Jump(m, o Hole) (Board, error) {
 	}
 	targetHole, err := b.GetHole(targetR, targetC)
 	if err != nil {
-		return result, fmt.Errorf("Target hole(%d,%d) does not exist\n", targetR, targetC)
+		return result, thole, fmt.Errorf("Target hole(%d,%d) does not exist\n", targetR, targetC)
 	}
 	if targetHole.Peg {
-		return result, fmt.Errorf("Target hole(%d,%d) has a peg in it\n", targetHole.Row, targetHole.Col)
+		return result, thole, fmt.Errorf("Target hole(%d,%d) has a peg in it\n", targetHole.Row, targetHole.Col)
 	}
 	for k, bh := range result.Holes {
 		if bh.Row == m.Row && bh.Col == m.Col {
@@ -96,7 +97,7 @@ func (b Board) Jump(m, o Hole) (Board, error) {
 			result.Holes[k].Peg = true
 		}
 	}
-	return result, nil
+	return result, targetHole, nil
 }
 
 //Board contains all the holes that contain the pegs
@@ -145,90 +146,102 @@ func BuildBoard(empty int) Board {
 	return b
 }
 
+type move struct {
+	H Hole
+	O Hole
+	T Hole
+}
+
+func (m move) String() string {
+	return fmt.Sprintf("[%d,%d] over [%d,%d] to [%d,%d]", m.H.Row, m.H.Col, m.O.Row, m.O.Col, m.T.Row, m.T.Col)
+}
+
 //Solve does a brute force solving of the game
-func (b Board) Solve() {
+func (b *Board) Solve() error {
+	s2 := rand.NewSource(time.Now().UnixNano())
+	r2 := rand.New(s2)
 	var newBoard = b
 	validMove := 0
-	type move struct {
-		H Hole
-		O Hole
-	}
 	for {
-
 		aMoves := []move{}
 		o := Hole{}
 		var err error
 		for _, v := range newBoard.Holes {
 			if v.Peg {
 				//upleft
-				o, err = b.GetHole(v.Row-1, v.Col-1)
+				o, err = newBoard.GetHole(v.Row-1, v.Col-1)
 				if err == nil {
-					_, errJ := b.Jump(v, o)
+					_, t, errJ := newBoard.Jump(v, o)
 					if errJ == nil {
-						aMoves = append(aMoves, move{H: v, O: o})
+						aMoves = append(aMoves, move{H: v, O: o, T: t})
 					}
 				}
 
 				//upright
-				o, err = b.GetHole(v.Row-1, v.Col+1)
+				o, err = newBoard.GetHole(v.Row-1, v.Col+1)
 				if err == nil {
-					_, errJ := b.Jump(v, o)
+					_, t, errJ := newBoard.Jump(v, o)
 					if errJ == nil {
-						aMoves = append(aMoves, move{H: v, O: o})
+						aMoves = append(aMoves, move{H: v, O: o, T: t})
 					}
 				}
 
 				//left
-				o, err = b.GetHole(v.Row-2, v.Col)
+				o, err = newBoard.GetHole(v.Row, v.Col-2)
 				if err == nil {
-					_, errJ := b.Jump(v, o)
+					_, t, errJ := newBoard.Jump(v, o)
 					if errJ == nil {
-						aMoves = append(aMoves, move{H: v, O: o})
+						aMoves = append(aMoves, move{H: v, O: o, T: t})
 					}
 				}
 				//right
-				o, err = b.GetHole(v.Row+2, v.Col)
+				o, err = newBoard.GetHole(v.Row, v.Col+2)
 				if err == nil {
-					_, errJ := b.Jump(v, o)
+					_, t, errJ := newBoard.Jump(v, o)
 					if errJ == nil {
-						aMoves = append(aMoves, move{H: v, O: o})
+						aMoves = append(aMoves, move{H: v, O: o, T: t})
 					}
 				}
 
 				//downleft
-				o, err = b.GetHole(v.Row+1, v.Col-1)
+				o, err = newBoard.GetHole(v.Row+1, v.Col-1)
 				if err == nil {
-					_, errJ := b.Jump(v, o)
+					_, t, errJ := newBoard.Jump(v, o)
 					if errJ == nil {
-						aMoves = append(aMoves, move{H: v, O: o})
+						aMoves = append(aMoves, move{H: v, O: o, T: t})
 					}
 				}
 
 				//downright
-				o, err = b.GetHole(v.Row+1, v.Col+1)
+				o, err = newBoard.GetHole(v.Row+1, v.Col+1)
 				if err == nil {
-					_, errJ := b.Jump(v, o)
+					_, t, errJ := newBoard.Jump(v, o)
 					if errJ == nil {
-						aMoves = append(aMoves, move{H: v, O: o})
+						aMoves = append(aMoves, move{H: v, O: o, T: t})
 					}
 				}
 			}
 		}
-		s2 := rand.NewSource(time.Now().UnixNano())
-		r2 := rand.New(s2)
+		if len(aMoves) == 0 {
+			//No legal moves left
+			newBoard = b
+			validMove = 0
+			b.MoveLog = []string{}
+			continue
+		}
 		available := r2.Intn(len(aMoves))
-		cBoard, errN := b.Jump(aMoves[available].H, aMoves[available].O)
+		cBoard, _, errN := newBoard.Jump(aMoves[available].H, aMoves[available].O)
 		if errN != nil {
-			fmt.Println(errN)
-			return
+			return errN
 		}
 		validMove++
-		newBoard = cBoard
-		fmt.Println("Move:", validMove, newBoard)
-		if validMove == 3 {
+		b.MoveLog = append(b.MoveLog, fmt.Sprintf("%v", aMoves[available]))
+		newBoard = &cBoard
+		if validMove == 13 {
 			break
 		}
 	}
+	return nil
 }
 
 func (b Board) String() string {
