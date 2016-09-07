@@ -92,3 +92,27 @@ func TestInvalidHolePegEmpty(t *testing.T) {
 		}
 	}
 }
+
+func TestErrorsTwo(t *testing.T) {
+	ea := ErrorArray{}
+	for r := 0; r < 3; r++ {
+		ea.Add(fmt.Errorf("Error %d", r+1))
+	}
+	expected := "Error 1\nError 2\nError 3"
+	received := ea.Error()
+	if received != expected {
+		t.Fatalf("Expected:\n%v\nReceived:\n%v\n", expected, received)
+	}
+}
+
+func TestErrorsTwelve(t *testing.T) {
+	ea := ErrorArray{}
+	for r := 0; r < 13; r++ {
+		ea.Add(fmt.Errorf("Error %d", r+1))
+	}
+	expected := "Error 1\nError 2\nError 3\nError 4\nError 5\nError 6\nError 7\nError 8\nError 9\nError 10\nToo many errors! Count: 12"
+	received := ea.Error()
+	if received != expected {
+		t.Fatalf("Expected:\n%v\nReceived:\n%v\n", expected, received)
+	}
+}

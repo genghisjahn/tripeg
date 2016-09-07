@@ -159,88 +159,121 @@ func (m move) String() string {
 	return fmt.Sprintf("[%d,%d] over [%d,%d] to [%d,%d]", m.H.Row, m.H.Col, m.O.Row, m.O.Col, m.T.Row, m.T.Col)
 }
 
+//ErrorArray an array of errors that also implements the error interface
+type ErrorArray struct {
+	Errors []error
+}
+
+func (ea ErrorArray) Error() string {
+	r := ""
+	m := len(ea.Errors)
+	c := m
+	if m > 11 {
+		m = 11
+		ea.Errors[10] = fmt.Errorf("Too many errors! Count: %v", c-1)
+	}
+	for _, v := range ea.Errors[0:m] {
+		r += v.Error() + "\n"
+	}
+	return r[0 : len(r)-1]
+}
+
+//Add takes an argument of the error interface and adds it to the array
+func (ea *ErrorArray) Add(err error) {
+	ea.Errors = append(ea.Errors, err)
+}
+
 //Solve does a brute force solving of the game
-func (b *Board) Solve() error {
+func (b *Board) Solve() []error {
 	s2 := rand.NewSource(time.Now().UnixNano())
 	r2 := rand.New(s2)
 	var newBoard = b
+	var solved = false
+	var solveErrors = ErrorArray{}
 	validMove := 0
 	for {
-		aMoves := []move{}
-		o := Hole{}
-		var err error
-		for _, v := range newBoard.Holes {
-			if v.Peg {
-				//upleft
-				o, err = newBoard.GetHole(v.Row-1, v.Col-1)
-				if err == nil {
-					_, t, errJ := newBoard.Jump(v, o)
-					if errJ == nil {
-						aMoves = append(aMoves, move{H: v, O: o, T: t})
-					}
-				}
+		func() {
 
-				//upright
-				o, err = newBoard.GetHole(v.Row-1, v.Col+1)
-				if err == nil {
-					_, t, errJ := newBoard.Jump(v, o)
-					if errJ == nil {
-						aMoves = append(aMoves, move{H: v, O: o, T: t})
+			aMoves := []move{}
+			o := Hole{}
+			var err error
+			for _, v := range newBoard.Holes {
+				if v.Peg {
+					//upleft
+					o, err = newBoard.GetHole(v.Row-1, v.Col-1)
+					if err == nil {
+						_, t, errJ := newBoard.Jump(v, o)
+						if errJ == nil {
+							aMoves = append(aMoves, move{H: v, O: o, T: t})
+						}
 					}
-				}
 
-				//left
-				o, err = newBoard.GetHole(v.Row, v.Col-2)
-				if err == nil {
-					_, t, errJ := newBoard.Jump(v, o)
-					if errJ == nil {
-						aMoves = append(aMoves, move{H: v, O: o, T: t})
+					//upright
+					o, err = newBoard.GetHole(v.Row-1, v.Col+1)
+					if err == nil {
+						_, t, errJ := newBoard.Jump(v, o)
+						if errJ == nil {
+							aMoves = append(aMoves, move{H: v, O: o, T: t})
+						}
 					}
-				}
-				//right
-				o, err = newBoard.GetHole(v.Row, v.Col+2)
-				if err == nil {
-					_, t, errJ := newBoard.Jump(v, o)
-					if errJ == nil {
-						aMoves = append(aMoves, move{H: v, O: o, T: t})
-					}
-				}
 
-				//downleft
-				o, err = newBoard.GetHole(v.Row+1, v.Col-1)
-				if err == nil {
-					_, t, errJ := newBoard.Jump(v, o)
-					if errJ == nil {
-						aMoves = append(aMoves, move{H: v, O: o, T: t})
+					//left
+					o, err = newBoard.GetHole(v.Row, v.Col-2)
+					if err == nil {
+						_, t, errJ := newBoard.Jump(v, o)
+						if errJ == nil {
+							aMoves = append(aMoves, move{H: v, O: o, T: t})
+						}
 					}
-				}
+					//right
+					o, err = newBoard.GetHole(v.Row, v.Col+2)
+					if err == nil {
+						_, t, errJ := newBoard.Jump(v, o)
+						if errJ == nil {
+							aMoves = append(aMoves, move{H: v, O: o, T: t})
+						}
+					}
 
-				//downright
-				o, err = newBoard.GetHole(v.Row+1, v.Col+1)
-				if err == nil {
-					_, t, errJ := newBoard.Jump(v, o)
-					if errJ == nil {
-						aMoves = append(aMoves, move{H: v, O: o, T: t})
+					//downleft
+					o, err = newBoard.GetHole(v.Row+1, v.Col-1)
+					if err == nil {
+						_, t, errJ := newBoard.Jump(v, o)
+						if errJ == nil {
+							aMoves = append(aMoves, move{H: v, O: o, T: t})
+						}
+					}
+
+					//downright
+					o, err = newBoard.GetHole(v.Row+1, v.Col+1)
+					if err == nil {
+						_, t, errJ := newBoard.Jump(v, o)
+						if errJ == nil {
+							aMoves = append(aMoves, move{H: v, O: o, T: t})
+						}
 					}
 				}
 			}
-		}
-		if len(aMoves) == 0 {
-			//No legal moves left
-			newBoard = b
-			validMove = 0
-			b.MoveLog = []string{}
-			continue
-		}
-		available := r2.Intn(len(aMoves))
-		cBoard, _, errN := newBoard.Jump(aMoves[available].H, aMoves[available].O)
-		if errN != nil {
-			return errN
-		}
-		validMove++
-		b.MoveLog = append(b.MoveLog, fmt.Sprintf("%v", aMoves[available]))
-		newBoard = &cBoard
-		if validMove == 13 {
+			if len(aMoves) == 0 {
+				//No legal moves left
+				newBoard = b
+				validMove = 0
+				b.MoveLog = []string{}
+				return
+			}
+			available := r2.Intn(len(aMoves))
+			cBoard, _, errN := newBoard.Jump(aMoves[available].H, aMoves[available].O)
+			if errN != nil {
+				solveErrors.Add(errN)
+			}
+			validMove++
+			b.MoveLog = append(b.MoveLog, fmt.Sprintf("%v", aMoves[available]))
+			newBoard = &cBoard
+			if validMove == 13 {
+				solved = true
+				return
+			}
+		}()
+		if solved {
 			break
 		}
 	}
