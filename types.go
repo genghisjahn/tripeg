@@ -126,7 +126,7 @@ func (b Board) GetHole(r, c int) (Hole, error) {
 func BuildBoard(empty int) (Board, error) {
 	var b Board
 	if empty < 0 || empty > 15 {
-		return b, fmt.Errorf("Parameter empty must be >=0 or <=15, you supplied %d", empty)
+		return b, fmt.Errorf("1st parameter must be >=0 or <=15, you supplied %d", empty)
 	}
 	s2 := rand.NewSource(time.Now().UnixNano())
 	r2 := rand.New(s2)
