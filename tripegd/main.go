@@ -33,6 +33,6 @@ func main() {
 	fmt.Println(board)
 	board.Solve()
 	for k, m := range board.MoveLog {
-		fmt.Println(k+1, m)
+		fmt.Println(fmt.Sprintf("%2d", k+1), m)
 	}
 }
