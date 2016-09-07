@@ -24,7 +24,6 @@ func main() {
 		}
 		empty = v
 	}
-	xlog.Info.Println(argsWithoutProg)
 	board, err := tripeg.BuildBoard(empty)
 	if err != nil {
 		xlog.Error.Println(err)
