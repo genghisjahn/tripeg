@@ -29,9 +29,9 @@ func main() {
 		xlog.Error.Println(err)
 		return
 	}
-	fmt.Println(board)
 	board.Solve()
-	for k, m := range board.MoveLog {
-		fmt.Println(fmt.Sprintf("%2d", k+1), m)
+
+	for k, c := range board.MoveChart {
+		fmt.Println("Move:", k+1, fmt.Sprintf("%s", c))
 	}
 }
