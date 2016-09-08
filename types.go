@@ -153,8 +153,11 @@ func (b Board) GetHole(r, c int) (Hole, error) {
 //All holes have a peg except one.
 //The top row has 1, then
 //2,3,4,5 for a total of 15 holes.
-func BuildBoard(empty int) (Board, error) {
+func BuildBoard(rows, empty int) (Board, error) {
 	var b Board
+	if rows < 5 {
+		return b, fmt.Errorf("Invalid rows valid %d, it must be greater than 4\n", rows)
+	}
 	if empty < 0 || empty > 15 {
 		return b, fmt.Errorf("1st parameter must be >=0 or <=15, you supplied %d", empty)
 	}
