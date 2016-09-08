@@ -5,15 +5,44 @@ import (
 	"math"
 	"math/rand"
 	"time"
+
+	"github.com/fatih/color"
 )
 
 //Hole struct that contains information
 //about a hole in the board, its location
 //and whether or not it has a peg in it.
 type Hole struct {
-	Row int //make of 5
-	Col int //max of 9
-	Peg bool
+	Row    int //make of 5
+	Col    int //max of 9
+	Peg    bool
+	Status int
+}
+
+const (
+	//Dormant short hand for a row/col location that's not involved a jump move
+	Dormant = iota
+	//Source shorthand for the source peg row/col for a jump move
+	Source
+	//Target the empty row/col the source peg will land in.
+	Target
+)
+
+func (b Board) showMove(m, o, t Hole) Board {
+	result := Board{}
+	for k, v := range b.Holes {
+		b.Holes[k].Status = Dormant
+		if v.Row == m.Row && v.Col == m.Col {
+			b.Holes[k].Status = Source
+		}
+		if v.Row == t.Row && v.Col == t.Col {
+			b.Holes[k].Status = Target
+		}
+	}
+	result.MoveLog = b.MoveLog
+	result.Holes = b.Holes
+	return result
+
 }
 
 //Jump from the Board struct type
@@ -102,8 +131,9 @@ func (b Board) Jump(m, o Hole) (Board, Hole, error) {
 
 //Board contains all the holes that contain the pegs
 type Board struct {
-	Holes   []Hole
-	MoveLog []string
+	Holes     []Hole
+	MoveLog   []string
+	MoveChart []string
 }
 
 //GetHole gets a pointer to a hole based on the row,col coordinates
@@ -258,15 +288,20 @@ func (b *Board) Solve() []error {
 				newBoard = b
 				validMove = 0
 				b.MoveLog = []string{}
+				b.MoveChart = []string{}
 				return
 			}
 			available := r2.Intn(len(aMoves))
-			cBoard, _, errN := newBoard.Jump(aMoves[available].H, aMoves[available].O)
+			avs := aMoves[available].H
+			avo := aMoves[available].O
+			cBoard, th, errN := newBoard.Jump(avs, avo)
 			if errN != nil {
 				solveErrors.Add(errN)
 			}
 			validMove++
+			b.MoveChart = append(b.MoveChart, fmt.Sprintf("%v", newBoard.showMove(avs, avo, th)))
 			b.MoveLog = append(b.MoveLog, fmt.Sprintf("%v", aMoves[available]))
+
 			newBoard = &cBoard
 			if validMove == 13 {
 				solved = true
@@ -282,6 +317,9 @@ func (b *Board) Solve() []error {
 
 func (b Board) String() string {
 	result := "\n"
+	tar := color.New(color.FgRed).SprintFunc()
+	src := color.New(color.FgGreen).SprintFunc()
+	dor := color.New(color.FgWhite).SprintFunc()
 	for r := 1; r < 6; r++ {
 		for c := 1; c < 10; c++ {
 			h, err := b.GetHole(r, c)
@@ -292,7 +330,14 @@ func (b Board) String() string {
 					mark = "*"
 				}
 			}
-			result += mark
+			switch h.Status {
+			case Source:
+				result += fmt.Sprintf("%s", src(mark))
+			case Target:
+				result += fmt.Sprintf("%s", tar(mark))
+			case Dormant:
+				result += fmt.Sprintf("%s", dor(mark))
+			}
 		}
 		result += "\n"
 	}
