@@ -116,3 +116,12 @@ func TestErrorsTwelve(t *testing.T) {
 		t.Fatalf("Expected:\n%v\nReceived:\n%v\n", expected, received)
 	}
 }
+
+func TestValidSolve(t *testing.T) {
+	b, _ := BuildBoard(6)
+	b.Solve()
+	mlen := len(b.MoveChart)
+	if mlen != 13 {
+		t.Fatalf("Expected 13 moves, got %d\n", mlen)
+	}
+}
