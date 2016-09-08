@@ -13,18 +13,18 @@ import (
 //about a hole in the board, its location
 //and whether or not it has a peg in it.
 type Hole struct {
-	Row    int //make of 5
+	Row    int //max of 5
 	Col    int //max of 9
 	Peg    bool
 	Status int
 }
 
 const (
-	//Dormant short hand for a row/col location that's not involved a jump move
+	//Dormant short hand for a row/col location that's not involved in a jump move
 	Dormant = iota
 	//Source shorthand for the source peg row/col for a jump move
 	Source
-	//Target the empty row/col the source peg will land in.
+	//Target the empty row/col the source peg will land in for a jump move.
 	Target
 )
 
@@ -86,7 +86,7 @@ func (b Board) Jump(m, o Hole) (Board, Hole, error) {
 	}
 	if rDif > 0 {
 		targetR = o.Row - 1
-		//This is a up
+		//This is an up jump
 	}
 	if rDif < 0 {
 		targetR = o.Row + 1
@@ -132,7 +132,7 @@ func (b Board) Jump(m, o Hole) (Board, Hole, error) {
 //Board contains all the holes that contain the pegs
 type Board struct {
 	Holes     []Hole
-	MoveLog   []string
+	MoveLog   []string //TODO: Remove the movelog.
 	MoveChart []string
 }
 
@@ -150,9 +150,9 @@ func (b Board) GetHole(r, c int) (Hole, error) {
 }
 
 //BuildBoard makes a board of peg holes.
-//All holes have a peg except one randomly assigned.
+//All holes have a peg except one.
 //The top row has 1, then
-//2,3,4,5 for a total of 16 holes.
+//2,3,4,5 for a total of 15 holes.
 func BuildBoard(empty int) (Board, error) {
 	var b Board
 	if empty < 0 || empty > 15 {
@@ -228,6 +228,19 @@ func (b *Board) Solve() []error {
 			o := Hole{}
 			var err error
 			for _, v := range newBoard.Holes {
+				/*
+					Go through all of the holes on the board.
+					If the hole doesn't have a peg, it can't
+					have a legal move, so skip it.
+					If it doesn't have a peg, just to see if it has
+					a legal move by jumping left, right, up left, up right, down left or down right.
+					If any of these moves are legal, add it to the array of available moves.
+					Do this for each hole on the board.
+					Randomly select a legal move, color the board and return the new color coded board.
+					Keep doing this until we've done 13 legal moves or we run out of availaable moves.
+					If no legal moves left, start over and hope for the best.
+					If 13 legal moves, then we've solved it, return out of here.
+				*/
 				if v.Peg {
 					//upleft
 					o, err = newBoard.GetHole(v.Row-1, v.Col-1)
