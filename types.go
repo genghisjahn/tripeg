@@ -40,7 +40,6 @@ func (b Board) showMove(m, o, t Hole) Board {
 			b.Holes[k].Status = Target
 		}
 	}
-	result.MoveLog = b.MoveLog
 	result.Holes = b.Holes
 	return result
 
@@ -135,7 +134,6 @@ func (b Board) Jump(m, o Hole) (Board, Hole, error) {
 //Board contains all the holes that contain the pegs
 type Board struct {
 	Holes      []Hole
-	MoveLog    []string //TODO: Remove the movelog.
 	MoveChart  []string
 	SolveMoves int
 	Rows       int
@@ -162,7 +160,7 @@ func BuildBoard(rows, empty int) (Board, error) {
 		return b, fmt.Errorf("Invalid rows valid %d, it must be greater than 4\n", rows)
 	}
 	if rows > 6 {
-		return b, fmt.Errorf("We're going to need a better algorithm before we get to %d... rows\n", rows)
+		return b, fmt.Errorf("We're going to need a better algorithm before we get to %d rows...\n", rows)
 	}
 	max := 0
 	for i := 1; i < rows+1; i++ {
@@ -316,7 +314,6 @@ func (b *Board) Solve() []error {
 				//No legal moves left
 				newBoard = b
 				validMove = 0
-				b.MoveLog = []string{}
 				b.MoveChart = []string{}
 				return
 			}
@@ -334,7 +331,6 @@ func (b *Board) Solve() []error {
 				//fmt.Println(b.SolveMoves, high, b.SolveMoves-high)
 			}
 			b.MoveChart = append(b.MoveChart, fmt.Sprintf("%v", newBoard.showMove(avs, avo, th)))
-			b.MoveLog = append(b.MoveLog, fmt.Sprintf("%v", aMoves[available]))
 
 			newBoard = &cBoard
 			if validMove == b.SolveMoves {
