@@ -331,7 +331,7 @@ func (b *Board) Solve() []error {
 			validMove++
 			if validMove > high {
 				high = validMove
-				// fmt.Println(high)
+				//fmt.Println(b.SolveMoves, high, b.SolveMoves-high)
 			}
 			b.MoveChart = append(b.MoveChart, fmt.Sprintf("%v", newBoard.showMove(avs, avo, th)))
 			b.MoveLog = append(b.MoveLog, fmt.Sprintf("%v", aMoves[available]))
