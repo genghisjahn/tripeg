@@ -1,12 +1,12 @@
 package tripeg
 
 import (
+	"crypto/sha1"
 	"fmt"
+	"io"
 	"math"
 	"math/rand"
 	"time"
-
-	"github.com/fatih/color"
 )
 
 //Hole struct that contains information
@@ -139,6 +139,17 @@ type Board struct {
 	Rows       int
 }
 
+//Hash returns a hash value for the board
+func (b Board) Hash() string {
+	raw := ""
+	for _, v := range b.Holes {
+		raw += fmt.Sprintf("%v-%v-%v", v.Row, v.Col, v.Peg)
+	}
+	h := sha1.New()
+	io.WriteString(h, raw)
+	return fmt.Sprintf("%x", h.Sum(nil))
+}
+
 //GetHole gets a pointer to a hole based on the row,col coordinates
 func (b Board) GetHole(r, c int) (Hole, error) {
 	if r < 0 || r > b.Rows+1 || c < 0 || c > b.Rows+(b.Rows-1) {
@@ -160,7 +171,7 @@ func BuildBoard(rows, empty int) (Board, error) {
 		return b, fmt.Errorf("Invalid rows valid %d, it must be greater than 4\n", rows)
 	}
 	if rows > 6 {
-		return b, fmt.Errorf("We're going to need a better algorithm before we get to %d rows...\n", rows)
+		//return b, fmt.Errorf("We're going to need a better algorithm before we get to %d rows...\n", rows)
 	}
 	max := 0
 	for i := 1; i < rows+1; i++ {
@@ -170,7 +181,7 @@ func BuildBoard(rows, empty int) (Board, error) {
 	b.Rows = rows
 
 	if empty < 0 || empty > max {
-		return b, fmt.Errorf("1st parameter must be >=0 or <=%d, you supplied %d", empty, max)
+		return b, fmt.Errorf("1st parameter must be >=0 or <=%d, you supplied %d", max, empty)
 	}
 	s2 := rand.NewSource(time.Now().UnixNano())
 	r2 := rand.New(s2)
@@ -229,6 +240,7 @@ func (ea *ErrorArray) Add(err error) {
 
 //Solve does a brute force solving of the game
 func (b *Board) Solve() []error {
+	ngMap := map[string]string{}
 	high := 0
 	s2 := rand.NewSource(time.Now().UnixNano())
 	r2 := rand.New(s2)
@@ -259,59 +271,72 @@ func (b *Board) Solve() []error {
 					//upleft
 					o, err = newBoard.GetHole(v.Row-1, v.Col-1)
 					if err == nil {
-						_, t, errJ := newBoard.Jump(v, o)
+						pboard, t, errJ := newBoard.Jump(v, o)
 						if errJ == nil {
-							aMoves = append(aMoves, move{H: v, O: o, T: t})
+							if _, ok := ngMap[pboard.Hash()]; !ok {
+								aMoves = append(aMoves, move{H: v, O: o, T: t})
+							}
 						}
 					}
 
 					//upright
 					o, err = newBoard.GetHole(v.Row-1, v.Col+1)
 					if err == nil {
-						_, t, errJ := newBoard.Jump(v, o)
+						pboard, t, errJ := newBoard.Jump(v, o)
 						if errJ == nil {
-							aMoves = append(aMoves, move{H: v, O: o, T: t})
+							if _, ok := ngMap[pboard.Hash()]; !ok {
+								aMoves = append(aMoves, move{H: v, O: o, T: t})
+							}
 						}
 					}
 
 					//left
 					o, err = newBoard.GetHole(v.Row, v.Col-2)
 					if err == nil {
-						_, t, errJ := newBoard.Jump(v, o)
+						pboard, t, errJ := newBoard.Jump(v, o)
 						if errJ == nil {
-							aMoves = append(aMoves, move{H: v, O: o, T: t})
+							if _, ok := ngMap[pboard.Hash()]; !ok {
+								aMoves = append(aMoves, move{H: v, O: o, T: t})
+							}
 						}
 					}
 					//right
 					o, err = newBoard.GetHole(v.Row, v.Col+2)
 					if err == nil {
-						_, t, errJ := newBoard.Jump(v, o)
+						pboard, t, errJ := newBoard.Jump(v, o)
 						if errJ == nil {
-							aMoves = append(aMoves, move{H: v, O: o, T: t})
+							if _, ok := ngMap[pboard.Hash()]; !ok {
+								aMoves = append(aMoves, move{H: v, O: o, T: t})
+							}
 						}
 					}
 
 					//downleft
 					o, err = newBoard.GetHole(v.Row+1, v.Col-1)
 					if err == nil {
-						_, t, errJ := newBoard.Jump(v, o)
+						pboard, t, errJ := newBoard.Jump(v, o)
 						if errJ == nil {
-							aMoves = append(aMoves, move{H: v, O: o, T: t})
+							if _, ok := ngMap[pboard.Hash()]; !ok {
+								aMoves = append(aMoves, move{H: v, O: o, T: t})
+							}
 						}
 					}
 
 					//downright
 					o, err = newBoard.GetHole(v.Row+1, v.Col+1)
 					if err == nil {
-						_, t, errJ := newBoard.Jump(v, o)
+						pboard, t, errJ := newBoard.Jump(v, o)
 						if errJ == nil {
-							aMoves = append(aMoves, move{H: v, O: o, T: t})
+							if _, ok := ngMap[pboard.Hash()]; !ok {
+								aMoves = append(aMoves, move{H: v, O: o, T: t})
+							}
 						}
 					}
 				}
 			}
 			if len(aMoves) == 0 {
 				//No legal moves left
+				ngMap[newBoard.Hash()] = fmt.Sprintf("%s", newBoard)
 				newBoard = b
 				validMove = 0
 				b.MoveChart = []string{}
@@ -328,7 +353,7 @@ func (b *Board) Solve() []error {
 			validMove++
 			if validMove > high {
 				high = validMove
-				//fmt.Println(b.SolveMoves, high, b.SolveMoves-high)
+				// fmt.Println(b.SolveMoves, high, b.SolveMoves-high)
 			}
 			b.MoveChart = append(b.MoveChart, fmt.Sprintf("%v", newBoard.showMove(avs, avo, th)))
 
@@ -347,9 +372,6 @@ func (b *Board) Solve() []error {
 
 func (b Board) String() string {
 	result := "\n"
-	tar := color.New(color.FgRed).SprintFunc()
-	src := color.New(color.FgGreen).SprintFunc()
-	dor := color.New(color.FgWhite).SprintFunc()
 	offset := 1
 	for r := 1; r < b.Rows+1; r++ {
 		for c := 1; c < b.Rows*2+offset; c++ {
@@ -363,11 +385,11 @@ func (b Board) String() string {
 			}
 			switch h.Status {
 			case Source:
-				result += fmt.Sprintf("%s", src(mark))
+				result += "+"
 			case Target:
-				result += fmt.Sprintf("%s", tar(mark))
+				result += "0"
 			case Dormant:
-				result += fmt.Sprintf("%s", dor(mark))
+				result += mark
 			}
 		}
 		result += "\n"
