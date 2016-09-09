@@ -30,6 +30,7 @@ const (
 
 func (b Board) showMove(m, o, t Hole) Board {
 	result := Board{}
+	result.Rows = b.Rows
 	for k, v := range b.Holes {
 		b.Holes[k].Status = Dormant
 		if v.Row == m.Row && v.Col == m.Col {
@@ -48,6 +49,8 @@ func (b Board) showMove(m, o, t Hole) Board {
 //Jump from the Board struct type
 func (b Board) Jump(m, o Hole) (Board, Hole, error) {
 	result := Board{}
+	result.SolveMoves = b.SolveMoves
+	result.Rows = b.Rows
 	thole := Hole{}
 	for _, r := range b.Holes {
 		result.Holes = append(result.Holes, r)
@@ -135,11 +138,12 @@ type Board struct {
 	MoveLog    []string //TODO: Remove the movelog.
 	MoveChart  []string
 	SolveMoves int
+	Rows       int
 }
 
 //GetHole gets a pointer to a hole based on the row,col coordinates
 func (b Board) GetHole(r, c int) (Hole, error) {
-	if r < 0 || r > 6 || c < 0 || c > 9 {
+	if r < 0 || r > b.Rows+1 || c < 0 || c > b.Rows+(b.Rows-1) {
 		return Hole{}, fmt.Errorf("Hole %d,%d does not exist\n", r, c)
 	}
 	for _, v := range b.Holes {
@@ -153,26 +157,25 @@ func (b Board) GetHole(r, c int) (Hole, error) {
 //BuildBoard makes a board of peg holes.
 //All holes have a peg except one.
 //The top row has 1, then
-//2,3,4,5 for a total of 15 holes.
+//2,3,4,5 for a total of max holes.
 func BuildBoard(rows, empty int) (Board, error) {
 	var b Board
-	if rows < 5 {
-		return b, fmt.Errorf("Invalid rows valid %d, it must be greater than 4\n", rows)
+	if rows < 5 || rows > 6 {
+		return b, fmt.Errorf("Invalid rows valid %d, it must be greater than 4 & less than 6\n", rows)
 	}
 	//TODO
 	/*
-		Need to calculate valid max values for starting empty.
 		Need to calculate board build nested loop values
-		Need to calculate the number of moves needed to complete the board
 	*/
 	max := 0
 	for i := 1; i < rows+1; i++ {
 		max += i
 	}
 	b.SolveMoves = max - 2
+	b.Rows = rows
 
 	if empty < 0 || empty > max {
-		return b, fmt.Errorf("1st parameter must be >=0 or <=15, you supplied %d", empty)
+		return b, fmt.Errorf("1st parameter must be >=0 or <=%d, you supplied %d", empty, max)
 	}
 	s2 := rand.NewSource(time.Now().UnixNano())
 	r2 := rand.New(s2)
@@ -181,10 +184,10 @@ func BuildBoard(rows, empty int) (Board, error) {
 	} else {
 		empty--
 	}
-
-	for r := 1; r < 6; r++ {
+	for r := 1; r < rows+1; r++ {
 		for c := 1; c < r+1; c++ {
-			col := 4 - (r) + (c * 2)
+			offset := 1
+			col := rows + (c * 2) - offset - r
 			h := Hole{Row: r, Col: col, Peg: true}
 			if empty == len(b.Holes) {
 				h.Peg = false
@@ -323,6 +326,7 @@ func (b *Board) Solve() []error {
 			avs := aMoves[available].H
 			avo := aMoves[available].O
 			cBoard, th, errN := newBoard.Jump(avs, avo)
+			cBoard.Rows = b.Rows
 			if errN != nil {
 				solveErrors.Add(errN)
 			}
@@ -348,8 +352,9 @@ func (b Board) String() string {
 	tar := color.New(color.FgRed).SprintFunc()
 	src := color.New(color.FgGreen).SprintFunc()
 	dor := color.New(color.FgWhite).SprintFunc()
-	for r := 1; r < 6; r++ {
-		for c := 1; c < 10; c++ {
+	offset := 1
+	for r := 1; r < b.Rows+1; r++ {
+		for c := 1; c < b.Rows*2+offset; c++ {
 			h, err := b.GetHole(r, c)
 			mark := " "
 			if err == nil {

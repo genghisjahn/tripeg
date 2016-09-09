@@ -143,3 +143,13 @@ func TestValidSolve(t *testing.T) {
 		t.Fatalf("Expected 13 moves, got %d\n", mlen)
 	}
 }
+
+func TestGetLastPegForSixRows(t *testing.T) {
+	b, err := BuildBoard(6, 1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, bErr := b.GetHole(6, 11); bErr != nil {
+		t.Fatal(bErr)
+	}
+}
