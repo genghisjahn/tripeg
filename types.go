@@ -7,8 +7,6 @@ import (
 	"math"
 	"math/rand"
 	"time"
-
-	"github.com/fatih/color"
 )
 
 //Hole struct that contains information
@@ -374,9 +372,6 @@ func (b *Board) Solve() []error {
 
 func (b Board) String() string {
 	result := "\n"
-	tar := color.New(color.FgRed).SprintFunc()
-	src := color.New(color.FgGreen).SprintFunc()
-	dor := color.New(color.FgWhite).SprintFunc()
 	offset := 1
 	for r := 1; r < b.Rows+1; r++ {
 		for c := 1; c < b.Rows*2+offset; c++ {
@@ -390,11 +385,11 @@ func (b Board) String() string {
 			}
 			switch h.Status {
 			case Source:
-				result += fmt.Sprintf("%s", src(mark))
+				result += "+"
 			case Target:
-				result += fmt.Sprintf("%s", tar(mark))
+				result += "0"
 			case Dormant:
-				result += fmt.Sprintf("%s", dor(mark))
+				result += mark
 			}
 		}
 		result += "\n"
