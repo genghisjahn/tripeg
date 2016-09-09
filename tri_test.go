@@ -7,7 +7,10 @@ import (
 )
 
 func TestValidJumpVertical(t *testing.T) {
-	b, _ := BuildBoard(1)
+	b, errb := BuildBoard(5, 1)
+	if errb != nil {
+		t.Fatal(errb)
+	}
 	h, err1 := b.GetHole(3, 3)
 	if err1 != nil {
 		t.Errorf("Can't find hole 3,3")
@@ -18,12 +21,15 @@ func TestValidJumpVertical(t *testing.T) {
 	}
 	_, _, err := b.Jump(h, o)
 	if err != nil {
-		t.Fatal("Should have been successful.")
+		t.Fatal("Should have been successful.", err)
 	}
 }
 
 func TestValidJumpHorizontal(t *testing.T) {
-	b, _ := BuildBoard(6)
+	b, errb := BuildBoard(5, 6)
+	if errb != nil {
+		t.Fatal(errb)
+	}
 	h, err1 := b.GetHole(3, 3)
 	if err1 != nil {
 		t.Errorf("Can't find hole 3,3")
@@ -39,7 +45,10 @@ func TestValidJumpHorizontal(t *testing.T) {
 }
 
 func TestInvavidJumpOverHasNoPeg(t *testing.T) {
-	b, _ := BuildBoard(6)
+	b, errb := BuildBoard(5, 6)
+	if errb != nil {
+		t.Fatal(errb)
+	}
 	h, err1 := b.GetHole(2, 6)
 	if err1 != nil {
 		t.Errorf("Can't find hole 2,6")
@@ -58,7 +67,10 @@ func TestInvavidJumpOverHasNoPeg(t *testing.T) {
 }
 
 func TestInvavidTargetPegFull(t *testing.T) {
-	b, _ := BuildBoard(6)
+	b, errb := BuildBoard(5, 6)
+	if errb != nil {
+		t.Fatal(errb)
+	}
 	h, err1 := b.GetHole(3, 3)
 	if err1 != nil {
 		t.Errorf("Can't find hole 3,3")
@@ -76,7 +88,10 @@ func TestInvavidTargetPegFull(t *testing.T) {
 }
 
 func TestInvalidHolePegEmpty(t *testing.T) {
-	b, _ := BuildBoard(6)
+	b, errb := BuildBoard(5, 6)
+	if errb != nil {
+		t.Fatal(errb)
+	}
 	h, err1 := b.GetHole(3, 7)
 	if err1 != nil {
 		t.Errorf("Can't find hole 3,7")
@@ -118,10 +133,23 @@ func TestErrorsTwelve(t *testing.T) {
 }
 
 func TestValidSolve(t *testing.T) {
-	b, _ := BuildBoard(6)
+	b, err := BuildBoard(5, 6)
+	if err != nil {
+		t.Fatal(err)
+	}
 	b.Solve()
 	mlen := len(b.MoveChart)
 	if mlen != 13 {
 		t.Fatalf("Expected 13 moves, got %d\n", mlen)
+	}
+}
+
+func TestGetLastPegForSixRows(t *testing.T) {
+	b, err := BuildBoard(6, 1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, bErr := b.GetHole(6, 11); bErr != nil {
+		t.Fatal(bErr)
 	}
 }

@@ -30,6 +30,7 @@ const (
 
 func (b Board) showMove(m, o, t Hole) Board {
 	result := Board{}
+	result.Rows = b.Rows
 	for k, v := range b.Holes {
 		b.Holes[k].Status = Dormant
 		if v.Row == m.Row && v.Col == m.Col {
@@ -39,7 +40,6 @@ func (b Board) showMove(m, o, t Hole) Board {
 			b.Holes[k].Status = Target
 		}
 	}
-	result.MoveLog = b.MoveLog
 	result.Holes = b.Holes
 	return result
 
@@ -48,6 +48,8 @@ func (b Board) showMove(m, o, t Hole) Board {
 //Jump from the Board struct type
 func (b Board) Jump(m, o Hole) (Board, Hole, error) {
 	result := Board{}
+	result.SolveMoves = b.SolveMoves
+	result.Rows = b.Rows
 	thole := Hole{}
 	for _, r := range b.Holes {
 		result.Holes = append(result.Holes, r)
@@ -131,14 +133,15 @@ func (b Board) Jump(m, o Hole) (Board, Hole, error) {
 
 //Board contains all the holes that contain the pegs
 type Board struct {
-	Holes     []Hole
-	MoveLog   []string //TODO: Remove the movelog.
-	MoveChart []string
+	Holes      []Hole
+	MoveChart  []string
+	SolveMoves int
+	Rows       int
 }
 
 //GetHole gets a pointer to a hole based on the row,col coordinates
 func (b Board) GetHole(r, c int) (Hole, error) {
-	if r < 0 || r > 6 || c < 0 || c > 9 {
+	if r < 0 || r > b.Rows+1 || c < 0 || c > b.Rows+(b.Rows-1) {
 		return Hole{}, fmt.Errorf("Hole %d,%d does not exist\n", r, c)
 	}
 	for _, v := range b.Holes {
@@ -151,24 +154,35 @@ func (b Board) GetHole(r, c int) (Hole, error) {
 
 //BuildBoard makes a board of peg holes.
 //All holes have a peg except one.
-//The top row has 1, then
-//2,3,4,5 for a total of 15 holes.
-func BuildBoard(empty int) (Board, error) {
+func BuildBoard(rows, empty int) (Board, error) {
 	var b Board
-	if empty < 0 || empty > 15 {
-		return b, fmt.Errorf("1st parameter must be >=0 or <=15, you supplied %d", empty)
+	if rows < 5 {
+		return b, fmt.Errorf("Invalid rows valid %d, it must be greater than 4\n", rows)
+	}
+	if rows > 6 {
+		return b, fmt.Errorf("We're going to need a better algorithm before we get to %d rows...\n", rows)
+	}
+	max := 0
+	for i := 1; i < rows+1; i++ {
+		max += i
+	}
+	b.SolveMoves = max - 2
+	b.Rows = rows
+
+	if empty < 0 || empty > max {
+		return b, fmt.Errorf("1st parameter must be >=0 or <=%d, you supplied %d", empty, max)
 	}
 	s2 := rand.NewSource(time.Now().UnixNano())
 	r2 := rand.New(s2)
 	if empty == 0 {
-		empty = r2.Intn(15)
+		empty = r2.Intn(max)
 	} else {
 		empty--
 	}
-
-	for r := 1; r < 6; r++ {
+	for r := 1; r < rows+1; r++ {
 		for c := 1; c < r+1; c++ {
-			col := 4 - (r) + (c * 2)
+			offset := 1
+			col := rows + (c * 2) - offset - r
 			h := Hole{Row: r, Col: col, Peg: true}
 			if empty == len(b.Holes) {
 				h.Peg = false
@@ -215,6 +229,7 @@ func (ea *ErrorArray) Add(err error) {
 
 //Solve does a brute force solving of the game
 func (b *Board) Solve() []error {
+	high := 0
 	s2 := rand.NewSource(time.Now().UnixNano())
 	r2 := rand.New(s2)
 	var newBoard = b
@@ -223,7 +238,6 @@ func (b *Board) Solve() []error {
 	validMove := 0
 	for {
 		func() {
-
 			aMoves := []move{}
 			o := Hole{}
 			var err error
@@ -237,9 +251,9 @@ func (b *Board) Solve() []error {
 					If any of these moves are legal, add it to the array of available moves.
 					Do this for each hole on the board.
 					Randomly select a legal move, color the board and return the new color coded board.
-					Keep doing this until we've done 13 legal moves or we run out of availaable moves.
+					Keep doing this until we've done SolveMoves legal moves or we run out of availaable moves.
 					If no legal moves left, start over and hope for the best.
-					If 13 legal moves, then we've solved it, return out of here.
+					If SolveMoves legal moves, then we've solved it, return out of here.
 				*/
 				if v.Peg {
 					//upleft
@@ -300,7 +314,6 @@ func (b *Board) Solve() []error {
 				//No legal moves left
 				newBoard = b
 				validMove = 0
-				b.MoveLog = []string{}
 				b.MoveChart = []string{}
 				return
 			}
@@ -308,15 +321,19 @@ func (b *Board) Solve() []error {
 			avs := aMoves[available].H
 			avo := aMoves[available].O
 			cBoard, th, errN := newBoard.Jump(avs, avo)
+			cBoard.Rows = b.Rows
 			if errN != nil {
 				solveErrors.Add(errN)
 			}
 			validMove++
+			if validMove > high {
+				high = validMove
+				//fmt.Println(b.SolveMoves, high, b.SolveMoves-high)
+			}
 			b.MoveChart = append(b.MoveChart, fmt.Sprintf("%v", newBoard.showMove(avs, avo, th)))
-			b.MoveLog = append(b.MoveLog, fmt.Sprintf("%v", aMoves[available]))
 
 			newBoard = &cBoard
-			if validMove == 13 {
+			if validMove == b.SolveMoves {
 				solved = true
 				return
 			}
@@ -333,8 +350,9 @@ func (b Board) String() string {
 	tar := color.New(color.FgRed).SprintFunc()
 	src := color.New(color.FgGreen).SprintFunc()
 	dor := color.New(color.FgWhite).SprintFunc()
-	for r := 1; r < 6; r++ {
-		for c := 1; c < 10; c++ {
+	offset := 1
+	for r := 1; r < b.Rows+1; r++ {
+		for c := 1; c < b.Rows*2+offset; c++ {
 			h, err := b.GetHole(r, c)
 			mark := " "
 			if err == nil {
