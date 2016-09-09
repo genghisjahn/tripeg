@@ -131,9 +131,10 @@ func (b Board) Jump(m, o Hole) (Board, Hole, error) {
 
 //Board contains all the holes that contain the pegs
 type Board struct {
-	Holes     []Hole
-	MoveLog   []string //TODO: Remove the movelog.
-	MoveChart []string
+	Holes      []Hole
+	MoveLog    []string //TODO: Remove the movelog.
+	MoveChart  []string
+	SolveMoves int
 }
 
 //GetHole gets a pointer to a hole based on the row,col coordinates
@@ -168,15 +169,15 @@ func BuildBoard(rows, empty int) (Board, error) {
 	for i := 1; i < rows+1; i++ {
 		max += i
 	}
-	_ = max
+	b.SolveMoves = max - 2
 
-	if empty < 0 || empty > 15 {
+	if empty < 0 || empty > max {
 		return b, fmt.Errorf("1st parameter must be >=0 or <=15, you supplied %d", empty)
 	}
 	s2 := rand.NewSource(time.Now().UnixNano())
 	r2 := rand.New(s2)
 	if empty == 0 {
-		empty = r2.Intn(15)
+		empty = r2.Intn(max)
 	} else {
 		empty--
 	}
@@ -238,7 +239,6 @@ func (b *Board) Solve() []error {
 	validMove := 0
 	for {
 		func() {
-
 			aMoves := []move{}
 			o := Hole{}
 			var err error
@@ -252,9 +252,9 @@ func (b *Board) Solve() []error {
 					If any of these moves are legal, add it to the array of available moves.
 					Do this for each hole on the board.
 					Randomly select a legal move, color the board and return the new color coded board.
-					Keep doing this until we've done 13 legal moves or we run out of availaable moves.
+					Keep doing this until we've done SolveMoves legal moves or we run out of availaable moves.
 					If no legal moves left, start over and hope for the best.
-					If 13 legal moves, then we've solved it, return out of here.
+					If SolveMoves legal moves, then we've solved it, return out of here.
 				*/
 				if v.Peg {
 					//upleft
@@ -331,7 +331,7 @@ func (b *Board) Solve() []error {
 			b.MoveLog = append(b.MoveLog, fmt.Sprintf("%v", aMoves[available]))
 
 			newBoard = &cBoard
-			if validMove == 13 {
+			if validMove == b.SolveMoves {
 				solved = true
 				return
 			}
