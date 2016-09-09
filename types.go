@@ -160,7 +160,7 @@ func BuildBoard(rows, empty int) (Board, error) {
 		return b, fmt.Errorf("Invalid rows valid %d, it must be greater than 4\n", rows)
 	}
 	if rows > 6 {
-		return b, fmt.Errorf("We're going to need a better algorithm before we get to %d rows...\n", rows)
+		//return b, fmt.Errorf("We're going to need a better algorithm before we get to %d rows...\n", rows)
 	}
 	max := 0
 	for i := 1; i < rows+1; i++ {
@@ -170,7 +170,7 @@ func BuildBoard(rows, empty int) (Board, error) {
 	b.Rows = rows
 
 	if empty < 0 || empty > max {
-		return b, fmt.Errorf("1st parameter must be >=0 or <=%d, you supplied %d", empty, max)
+		return b, fmt.Errorf("1st parameter must be >=0 or <=%d, you supplied %d", max, empty)
 	}
 	s2 := rand.NewSource(time.Now().UnixNano())
 	r2 := rand.New(s2)
