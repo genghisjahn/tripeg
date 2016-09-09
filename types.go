@@ -158,6 +158,18 @@ func BuildBoard(rows, empty int) (Board, error) {
 	if rows < 5 {
 		return b, fmt.Errorf("Invalid rows valid %d, it must be greater than 4\n", rows)
 	}
+	//TODO
+	/*
+		Need to calculate valid max values for starting empty.
+		Need to calculate board build nested loop values
+		Need to calculate the number of moves needed to complete the board
+	*/
+	max := 0
+	for i := 1; i < rows+1; i++ {
+		max += i
+	}
+	_ = max
+
 	if empty < 0 || empty > 15 {
 		return b, fmt.Errorf("1st parameter must be >=0 or <=15, you supplied %d", empty)
 	}
