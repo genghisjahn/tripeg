@@ -1,7 +1,9 @@
 package tripeg
 
 import (
+	"crypto/sha1"
 	"fmt"
+	"io"
 	"math"
 	"math/rand"
 	"time"
@@ -139,6 +141,17 @@ type Board struct {
 	Rows       int
 }
 
+//Hash returns a hash value for the board
+func (b Board) Hash() string {
+	raw := ""
+	for _, v := range b.Holes {
+		raw += fmt.Sprintf("%v-%v-%v", v.Row, v.Col, v.Peg)
+	}
+	h := sha1.New()
+	io.WriteString(h, raw)
+	return fmt.Sprintf("%x", h.Sum(nil))
+}
+
 //GetHole gets a pointer to a hole based on the row,col coordinates
 func (b Board) GetHole(r, c int) (Hole, error) {
 	if r < 0 || r > b.Rows+1 || c < 0 || c > b.Rows+(b.Rows-1) {
@@ -229,6 +242,7 @@ func (ea *ErrorArray) Add(err error) {
 
 //Solve does a brute force solving of the game
 func (b *Board) Solve() []error {
+	ngMap := map[string]string{}
 	high := 0
 	s2 := rand.NewSource(time.Now().UnixNano())
 	r2 := rand.New(s2)
@@ -259,59 +273,72 @@ func (b *Board) Solve() []error {
 					//upleft
 					o, err = newBoard.GetHole(v.Row-1, v.Col-1)
 					if err == nil {
-						_, t, errJ := newBoard.Jump(v, o)
+						pboard, t, errJ := newBoard.Jump(v, o)
 						if errJ == nil {
-							aMoves = append(aMoves, move{H: v, O: o, T: t})
+							if _, ok := ngMap[pboard.Hash()]; !ok {
+								aMoves = append(aMoves, move{H: v, O: o, T: t})
+							}
 						}
 					}
 
 					//upright
 					o, err = newBoard.GetHole(v.Row-1, v.Col+1)
 					if err == nil {
-						_, t, errJ := newBoard.Jump(v, o)
+						pboard, t, errJ := newBoard.Jump(v, o)
 						if errJ == nil {
-							aMoves = append(aMoves, move{H: v, O: o, T: t})
+							if _, ok := ngMap[pboard.Hash()]; !ok {
+								aMoves = append(aMoves, move{H: v, O: o, T: t})
+							}
 						}
 					}
 
 					//left
 					o, err = newBoard.GetHole(v.Row, v.Col-2)
 					if err == nil {
-						_, t, errJ := newBoard.Jump(v, o)
+						pboard, t, errJ := newBoard.Jump(v, o)
 						if errJ == nil {
-							aMoves = append(aMoves, move{H: v, O: o, T: t})
+							if _, ok := ngMap[pboard.Hash()]; !ok {
+								aMoves = append(aMoves, move{H: v, O: o, T: t})
+							}
 						}
 					}
 					//right
 					o, err = newBoard.GetHole(v.Row, v.Col+2)
 					if err == nil {
-						_, t, errJ := newBoard.Jump(v, o)
+						pboard, t, errJ := newBoard.Jump(v, o)
 						if errJ == nil {
-							aMoves = append(aMoves, move{H: v, O: o, T: t})
+							if _, ok := ngMap[pboard.Hash()]; !ok {
+								aMoves = append(aMoves, move{H: v, O: o, T: t})
+							}
 						}
 					}
 
 					//downleft
 					o, err = newBoard.GetHole(v.Row+1, v.Col-1)
 					if err == nil {
-						_, t, errJ := newBoard.Jump(v, o)
+						pboard, t, errJ := newBoard.Jump(v, o)
 						if errJ == nil {
-							aMoves = append(aMoves, move{H: v, O: o, T: t})
+							if _, ok := ngMap[pboard.Hash()]; !ok {
+								aMoves = append(aMoves, move{H: v, O: o, T: t})
+							}
 						}
 					}
 
 					//downright
 					o, err = newBoard.GetHole(v.Row+1, v.Col+1)
 					if err == nil {
-						_, t, errJ := newBoard.Jump(v, o)
+						pboard, t, errJ := newBoard.Jump(v, o)
 						if errJ == nil {
-							aMoves = append(aMoves, move{H: v, O: o, T: t})
+							if _, ok := ngMap[pboard.Hash()]; !ok {
+								aMoves = append(aMoves, move{H: v, O: o, T: t})
+							}
 						}
 					}
 				}
 			}
 			if len(aMoves) == 0 {
 				//No legal moves left
+				ngMap[newBoard.Hash()] = fmt.Sprintf("%s", newBoard)
 				newBoard = b
 				validMove = 0
 				b.MoveChart = []string{}
@@ -328,7 +355,7 @@ func (b *Board) Solve() []error {
 			validMove++
 			if validMove > high {
 				high = validMove
-				//fmt.Println(b.SolveMoves, high, b.SolveMoves-high)
+				// fmt.Println(b.SolveMoves, high, b.SolveMoves-high)
 			}
 			b.MoveChart = append(b.MoveChart, fmt.Sprintf("%v", newBoard.showMove(avs, avo, th)))
 
