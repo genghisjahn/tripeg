@@ -39,7 +39,6 @@ func main() {
 		return
 	}
 	board.Solve()
-
 	for k, c := range board.MoveChart {
 		fmt.Println("Move:", k+1, fmt.Sprintf("%s", c))
 	}

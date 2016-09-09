@@ -156,17 +156,14 @@ func (b Board) GetHole(r, c int) (Hole, error) {
 
 //BuildBoard makes a board of peg holes.
 //All holes have a peg except one.
-//The top row has 1, then
-//2,3,4,5 for a total of max holes.
 func BuildBoard(rows, empty int) (Board, error) {
 	var b Board
-	if rows < 5 || rows > 6 {
-		return b, fmt.Errorf("Invalid rows valid %d, it must be greater than 4 & less than 6\n", rows)
+	if rows < 5 {
+		return b, fmt.Errorf("Invalid rows valid %d, it must be greater than 4\n", rows)
 	}
-	//TODO
-	/*
-		Need to calculate board build nested loop values
-	*/
+	if rows > 6 {
+		return b, fmt.Errorf("We're going to need a better algorithm before we get to %d... rows\n", rows)
+	}
 	max := 0
 	for i := 1; i < rows+1; i++ {
 		max += i
@@ -234,6 +231,7 @@ func (ea *ErrorArray) Add(err error) {
 
 //Solve does a brute force solving of the game
 func (b *Board) Solve() []error {
+	high := 0
 	s2 := rand.NewSource(time.Now().UnixNano())
 	r2 := rand.New(s2)
 	var newBoard = b
@@ -331,6 +329,10 @@ func (b *Board) Solve() []error {
 				solveErrors.Add(errN)
 			}
 			validMove++
+			if validMove > high {
+				high = validMove
+				// fmt.Println(high)
+			}
 			b.MoveChart = append(b.MoveChart, fmt.Sprintf("%v", newBoard.showMove(avs, avo, th)))
 			b.MoveLog = append(b.MoveLog, fmt.Sprintf("%v", aMoves[available]))
 
