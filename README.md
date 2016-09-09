@@ -8,7 +8,7 @@ I'm well aware that this is a solved game, I just wanted to write a program to s
 1. `./tripegd` to run the solver for a random missing peg.
 1. `.tripegd 1` to run the solver for the top missing peg.
   1. You can enter an integer as a first argument to specify a missing peg.  Pegs are numbers top to bottom, left to right.  Valid arguments are based on the number of rows (the 2nd parameter).
-  1. You can enter an integer that's 5 or greater for the number of rows[default=5].  5 and 6 row triangles are solved quickly.  8 row triangles are sometimes solved in less than a minute, but sometimes never return a solution.  7 and 9 row triangles have never returned  a solution.  A 10 row triangle has returned a solution a few times.  Haven't tried anything above 10 rows.
+  1. You can enter an integer that's 5 or greater for the number of rows[default=5].  5 and 6 row triangles are solved quickly.  8 row triangles are sometimes solved in less than a minute([proof](https://gist.github.com/genghisjahn/6305d886454ffa87ed8efbf0a6ee949b)), but sometimes never return a solution.  7 and 9 row triangles have never returned  a solution.  A 10 row triangle has returned a solution a few times.  Haven't tried anything above 10 rows.
 
 The solver will print out a solution to the console.  
 * `+` is the peg that should be moved
