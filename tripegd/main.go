@@ -55,7 +55,6 @@ func main() {
 		sol := ""
 		for _, c := range board.MoveChart {
 			sol += fmt.Sprintf("%s", c)
-			fmt.Println(sol)
 		}
 		data := []byte(sol)
 		sHash := fmt.Sprintf("%x", md5.Sum(data))
@@ -64,6 +63,9 @@ func main() {
 			// fmt.Println(sCount, sHash)
 			solutions[sHash] = fmt.Sprintf("%s", sol)
 			conn.Do("set", sHash, sol)
+		}
+		if s%100 == 0 {
+			fmt.Println(s, sCount)
 		}
 	}
 	fmt.Println(len(solutions))
