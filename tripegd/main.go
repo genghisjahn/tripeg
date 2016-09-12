@@ -1,15 +1,23 @@
 package main
 
 import (
+	"crypto/md5"
 	"fmt"
 	"os"
 	"strconv"
 
+	"github.com/garyburd/redigo/redis"
 	"github.com/genghisjahn/tripeg"
 	"github.com/genghisjahn/xlog"
 )
 
 func main() {
+	conn, err := redis.Dial("tcp", "localhost:6379")
+	if err != nil {
+		panic(err)
+	}
+	defer conn.Close()
+	solutions := map[string]string{}
 	if err := xlog.New(xlog.Infolvl); err != nil {
 		panic(err)
 	}
@@ -33,13 +41,30 @@ func main() {
 		}
 		rows = v
 	}
-	board, err := tripeg.BuildBoard(rows, empty)
-	if err != nil {
-		xlog.Error.Println(err)
-		return
+	sCount := 0
+	for s := 0; s < 5000; s++ {
+		board, err := tripeg.BuildBoard(rows, empty)
+		if err != nil {
+			xlog.Error.Println(err)
+			return
+		}
+		board.Solve()
+		// for k, c := range board.MoveChart {
+		// 	fmt.Println("Move:", k+1, fmt.Sprintf("%s", c))
+		// }
+		sol := ""
+		for _, c := range board.MoveChart {
+			sol += fmt.Sprintf("%s", c)
+			fmt.Println(sol)
+		}
+		data := []byte(sol)
+		sHash := fmt.Sprintf("%x", md5.Sum(data))
+		if _, ok := solutions[sHash]; !ok {
+			sCount++
+			// fmt.Println(sCount, sHash)
+			solutions[sHash] = fmt.Sprintf("%s", sol)
+			conn.Do("set", sHash, sol)
+		}
 	}
-	board.Solve()
-	for k, c := range board.MoveChart {
-		fmt.Println("Move:", k+1, fmt.Sprintf("%s", c))
-	}
+	fmt.Println(len(solutions))
 }
