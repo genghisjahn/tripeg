@@ -1,7 +1,6 @@
 package main
 
 import (
-	"crypto/md5"
 	"fmt"
 	"os"
 	"strconv"
@@ -17,7 +16,7 @@ func main() {
 		panic(err)
 	}
 	defer conn.Close()
-	solutions := map[string]string{}
+	// solutions := map[string]string{}
 	if err := xlog.New(xlog.Infolvl); err != nil {
 		panic(err)
 	}
@@ -41,32 +40,33 @@ func main() {
 		}
 		rows = v
 	}
-	sCount := 0
-	for s := 0; s < 5000; s++ {
+	// sCount := 0
+	maxCount := 1
+	for s := 0; s < maxCount; s++ {
 		board, err := tripeg.BuildBoard(rows, empty)
 		if err != nil {
 			xlog.Error.Println(err)
 			return
 		}
 		board.Solve()
-		// for k, c := range board.MoveChart {
-		// 	fmt.Println("Move:", k+1, fmt.Sprintf("%s", c))
-		// }
-		sol := ""
-		for _, c := range board.MoveChart {
-			sol += fmt.Sprintf("%s", c)
+		for k, c := range board.MoveChart {
+			fmt.Println("Move:", k+1, fmt.Sprintf("%s", c))
 		}
-		data := []byte(sol)
-		sHash := fmt.Sprintf("%x", md5.Sum(data))
-		if _, ok := solutions[sHash]; !ok {
-			sCount++
-			// fmt.Println(sCount, sHash)
-			solutions[sHash] = fmt.Sprintf("%s", sol)
-			conn.Do("set", sHash, sol)
-		}
-		if s%100 == 0 {
-			fmt.Println(s, sCount)
-		}
+		// 	sol := ""
+		// 	for _, c := range board.MoveChart {
+		// 		sol += fmt.Sprintf("%s", c)
+		// 	}
+		// 	data := []byte(sol)
+		// 	sHash := fmt.Sprintf("%x", md5.Sum(data))
+		// 	if _, ok := solutions[sHash]; !ok {
+		// 		sCount++
+		// 		// fmt.Println(sCount, sHash)
+		// 		solutions[sHash] = fmt.Sprintf("%s", sol)
+		// 		conn.Do("set", sHash, sol)
+		// 	}
+		// 	if s%100 == 0 {
+		// 		fmt.Println(s, sCount)
+		// 	}
 	}
-	fmt.Println(len(solutions))
+	// fmt.Println(len(solutions))
 }
