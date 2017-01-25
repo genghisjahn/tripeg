@@ -5,6 +5,7 @@ I'm well aware that this is a solved game, I just wanted to write a program to s
 
 1. `git clone` or `go get` this repo
 1. In the tripegd directory type `go build`
+1. run `go get github.com/genghisjahn/xlog`
 1. `./tripegd` to run the solver for a random missing peg for a 5 row triangle.
 1. `./tripegd 1` to run the solver for the top missing peg.  `./tripeg 0` will solve for a random missing peg to start for a 5 row triangle. 
   1. You can enter an integer as a first argument to specify a missing peg.  Pegs are numbers top to bottom, left to right.  Valid arguments are based on the number of rows (the 2nd parameter).
